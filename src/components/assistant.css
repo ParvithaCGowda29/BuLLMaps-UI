@@ -1,0 +1,157 @@
+/* Enterprise Assistant chat (22 Oct 2026, assistant pane design). Tokens only, so light/dark and FDE/Staging follow.
+   Prefixed with .assist to win over the older v3 / declutter assistant rules. */
+.assist .as-dropzone { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.assist .as-dropzone[data-dragging] { outline: 2px dashed var(--accent); outline-offset: -8px; border-radius: 12px; }
+
+/* Empty: greeting, sublines, composer and chips centred. */
+.assist .as-empty { flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: var(--pad); text-align: center; }
+.assist .as-hello { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+.assist .as-sub { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+.assist .as-empty .as-msg { align-self: center; background: none; padding: 0; font-size: 12.5px; color: var(--muted); }
+.assist .as-empty .as-compose { width: 100%; margin-top: 8px; padding: 0; }
+
+/* Composer: rounded field with + on the left, dictate and send / stop on the right, inside it. */
+.assist .as-compose { display: flex; flex-direction: column; gap: 8px; padding: 8px var(--pad) var(--pad); }
+.assist .as-composer { align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--border-strong); border-radius: 18px; background: var(--surface-2); }
+.assist .as-composer:focus-within { border-color: var(--accent); }
+.assist .as-composer .as-input { border: 0; background: transparent; min-height: 36px; padding: 8px 6px; }
+.assist .as-composer .as-input:focus-visible { box-shadow: none; }
+.assist .as-attach, .assist .as-composer .as-dictate { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--accent); background: var(--surface); color: var(--accent); display: grid; place-items: center; padding: 0; cursor: pointer; }
+.assist .as-attach:hover { background: var(--accent-soft); }
+.assist .as-composer .tip { right: auto; left: 0; } /* the + sits at the left edge: open the tip rightwards */
+.assist .as-attach:focus-visible, .assist .as-send:focus-visible, .assist .as-ibtn:focus-visible, .assist .as-sug:focus-visible, .assist .as-pill:focus-visible { outline: none; box-shadow: var(--focus); }
+.assist .as-composer .as-dictate.rec { background: var(--accent); color: var(--accent-ink); }
+.assist .as-send { width: 36px; height: 36px; border-radius: 50%; }
+.assist .as-stop { display: grid; place-items: center; cursor: pointer; }
+
+/* Chat attachment cards above the composer (questions only, never ingested). */
+.assist .as-files { display: flex; flex-wrap: wrap; gap: 8px; }
+.assist .as-file { display: inline-flex; align-items: center; gap: 10px; min-width: 0; max-width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); text-align: left; }
+.assist .as-file > .icon { flex: none; color: var(--accent); }
+.assist .as-file-meta { display: flex; flex-direction: column; min-width: 0; font-size: 12px; }
+.assist .as-file-meta strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.assist .as-file-meta span { color: var(--muted); font-size: 11px; }
+.assist .as-file-x { flex: none; width: 24px; height: 24px; border: 0; border-radius: 6px; background: none; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.assist .as-file-x:hover { background: var(--surface-3); color: var(--text); }
+
+/* Suggestion chips under the composer. */
+.assist .as-sugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.assist .as-sug { min-height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--muted); font-size: 12px; cursor: pointer; }
+.assist .as-sug:hover { color: var(--text); border-color: var(--accent); }
+
+/* Thread: user bubbles right in the accent colour; assistant replies left beside the B avatar, no bubble. */
+.assist .as-viewport { gap: 16px; }
+.assist .as-urow { align-self: flex-end; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; max-width: 88%; }
+.assist .as-uline { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.assist .as-msg.as-user { max-width: 100%; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 18px; padding: 9px 16px; }
+.assist .as-msg.as-user p { margin: 0; }
+.assist .as-uedit { opacity: 0; transition: opacity .12s; }
+.assist .as-urow:hover .as-uedit, .assist .as-uedit:focus-within { opacity: 1; }
+.assist .as-sent-file { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 12px; color: var(--text); }
+.assist .as-sent-file .icon { color: var(--accent); }
+.assist .as-arow { align-self: stretch; display: flex; align-items: flex-start; gap: 10px; }
+.assist .as-avatar { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #0084C2; color: #fff; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; margin-top: 1px; }
+.assist .as-abody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.assist .as-arow .as-msg.as-bot { max-width: 100%; background: none; border: 0; border-radius: 0; padding: 0; font-size: 13.5px; }
+.assist .as-arow .as-msg.as-bot.as-fail { border-left: 3px solid var(--err); padding-left: 10px; }
+.assist .as-msg.as-bot p { margin: 0; }
+.assist .as-caret { content: ''; display: inline-block; width: 8px; height: 1.05em; margin-left: 2px; vertical-align: text-bottom; background: var(--accent); animation: as-caret 1s steps(1) infinite; }
+@keyframes as-caret { 50% { opacity: 0; } }
+
+/* Action bar: always visible. */
+.assist .as-actions { display: flex; align-items: center; gap: 2px; margin-left: -6px; }
+.assist .as-ibtn { width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.assist .as-ibtn:hover { background: var(--surface-3); color: var(--text); }
+.assist .as-ibtn[data-submitted] { color: var(--accent); }
+.assist .as-ibtn:disabled { opacity: .4; cursor: not-allowed; }
+.assist .as-helper { margin: 0; font-size: 11.5px; color: var(--faint); }
+.as-more { z-index: 60; min-width: 180px; padding: 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+.as-more-item { display: block; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none; color: var(--text); font-size: 12.5px; text-align: left; cursor: pointer; }
+.as-more-item:hover, .as-more-item[data-highlighted] { background: var(--surface-3); outline: none; }
+
+/* Generating indicator. */
+.assist .as-gen { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted); }
+.assist .as-dots { display: inline-flex; gap: 3px; }
+.assist .as-dots i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: as-dot 1.2s ease-in-out infinite; }
+.assist .as-dots i:nth-child(2) { animation-delay: .15s; } .assist .as-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes as-dot { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
+
+/* Edit and resend. */
+.assist .as-edit { align-self: flex-end; width: min(100%, 88%); display: flex; flex-direction: column; gap: 8px; }
+.assist .as-edit-input { width: 100%; min-height: 72px; resize: vertical; padding: 10px 14px; border: 1.5px solid var(--accent); border-radius: 14px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; line-height: 1.5; }
+.assist .as-edit-input:focus-visible { outline: none; box-shadow: var(--focus); }
+.assist .as-edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.assist .as-pill { min-height: 30px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
+.assist .as-pill.primary { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .assist .as-caret, .assist .as-dots i { animation: none; }
+  .assist .as-uedit { transition: none; }
+}
+
+/* Idle Orb above the greeting (empty state only). The Orb's Tailwind classes (relative z-0 h-full w-full
+   overflow-hidden; canvas absolute inset-0 block) are mirrored here. Dimmed so the greeting stays the focus. */
+.assist .as-orb { flex: none; width: 124px; height: 124px; margin: -6px 0 -2px; opacity: .8; }
+.assist .as-orb > div { position: relative; z-index: 0; width: 100%; height: 100%; overflow: hidden; }
+.assist .as-orb canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+/* First message: the empty state fades out over the conversation, which fades in. */
+.assist .as-dropzone { position: relative; }
+.assist .as-empty-ghost { position: absolute; inset: 0; z-index: 2; pointer-events: none; justify-content: flex-start; padding-top: 18%; animation: as-ghost-out .3s ease forwards; }
+.assist .as-fade-in { animation: as-fade-in .3s ease; }
+@keyframes as-ghost-out { to { opacity: 0; transform: translateY(-12px); } }
+@keyframes as-fade-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .assist .as-empty-ghost, .assist .as-fade-in { animation-duration: 1ms; } }
+
+/* Composer dictate states and tooltips (moved from the pipeline's declutter.css). */
+.as-dictate { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1.5px solid var(--accent); border-radius: 10px; background: var(--surface); color: var(--accent); font-weight: 600; font-size: 13px; cursor: pointer; }
+.as-dictate:hover { background: var(--accent-soft); }
+.as-dictate.on { background: var(--err-soft); border-color: var(--err); color: var(--err); }
+.as-dictate:disabled { opacity: .5; cursor: not-allowed; }
+.as-dictate { position: relative; width: 40px; padding: 0; justify-content: center; }
+.as-dictate[data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); padding: 4px 8px; border-radius: 6px;
+  background: var(--text); color: var(--surface); font-size: 11.5px; font-weight: 600; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; }
+.as-dictate[data-tip]:hover::after, .as-dictate[data-tip]:focus-visible::after { opacity: 1; }
+/* Dictate states (16 Oct 2026): Listening (filled button, pulsing rings, waveform, timer, pill) · Transcribing · blocked. */
+.as-dict-pill-row { padding: 0 var(--pad); display: flex; }
+.as-dict-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 600; }
+.as-dict-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: as-dict-pulse 1.2s ease-in-out infinite; }
+@keyframes as-dict-pulse { 50% { opacity: .35; transform: scale(.8); } }
+.as-dictate.rec { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); overflow: visible; }
+.as-dictate.rec::before, .as-dictate.rec .icon::after { content: none; }
+.as-dictate.busy { opacity: 1; background: var(--accent-soft); }
+.as-dictate.req:disabled { opacity: 1; cursor: progress; }
+/* Listening (21 Oct 2026, variant 1): stop button with five bars, label + timer inside the input, send collapses. */
+.as-dictate.rec:hover { background: var(--accent); }
+.as-dictate.rec:focus-visible { outline: none; box-shadow: var(--focus); }
+.as-eq { display: inline-flex; align-items: center; gap: 2.5px; height: 18px; }
+.as-eq i { width: 3px; height: 100%; border-radius: 2px; background: currentColor; transform-origin: center; animation: as-eq .9s ease-in-out infinite; }
+.as-eq i:nth-child(1) { animation-delay: -.45s; } .as-eq i:nth-child(2) { animation-delay: -.15s; } .as-eq i:nth-child(3) { animation-delay: -.6s; }
+.as-eq i:nth-child(4) { animation-delay: -.3s; } .as-eq i:nth-child(5) { animation-delay: -.75s; }
+@keyframes as-eq { 0%, 100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+.as-field { flex: 1; min-width: 0; position: relative; display: flex; }
+.as-field > .as-input { width: 100%; }
+.as-listen { position: absolute; inset: 1px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 9px; background: var(--surface-2);
+  color: var(--accent); font-size: 13px; font-weight: 500; animation: as-listen-in .18s ease-out; }
+.as-listen-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes as-listen-in { from { opacity: 0; } }
+.as-timer { flex: none; font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--accent); font-weight: 600; }
+.as-send { transition: width .18s ease, margin-left .18s ease, opacity .18s ease; }
+.as-composer:has(.as-dictate.rec) .as-send { width: 0; margin-left: -8px; opacity: 0; overflow: hidden; visibility: hidden; pointer-events: none;
+  transition: width .18s ease, margin-left .18s ease, opacity .18s ease, visibility 0s .18s; }
+.as-dict-note { margin: -6px var(--pad) 10px; font-size: 12px; color: var(--err); }
+/* "Save this as your intake objective?" (21 Oct 2026): Yes / No in the message. */
+.as-confirm { display: flex; gap: 8px; margin-top: 8px; white-space: normal; }
+.as-confirm .btn { min-height: 32px; padding: 0 14px; }
+@media (prefers-reduced-motion: reduce) {
+  .as-dict-dot, .as-dictate.rec, .as-listen { animation: none; }
+  .as-send, .as-composer:has(.as-dictate.rec) .as-send { transition: none; }
+  .as-eq i { animation: none; } .as-eq i:nth-child(1), .as-eq i:nth-child(5) { transform: scaleY(.45); } .as-eq i:nth-child(2), .as-eq i:nth-child(4) { transform: scaleY(.8); }
+
+/* Action-button tooltips (Tip in components/ui.tsx): above the button, right-aligned so it never leaves the screen. */
+.tip-wrap { position: relative; display: inline-flex; }
+.tip { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 40; width: max-content; max-width: min(280px, calc(100vw - 32px));
+  padding: 7px 10px; border-radius: 8px; background: var(--surface-3); color: var(--text); border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow); font-size: 12px; line-height: 1.4; font-weight: 400; text-align: left; white-space: normal; pointer-events: none; }
+.tip[hidden] { display: none; }
+.tip::after { content: ""; position: absolute; right: 16px; top: 100%; width: 8px; height: 8px; margin-top: -4px; transform: rotate(45deg);
+  background: var(--surface-3); border-right: 1px solid var(--border-strong); border-bottom: 1px solid var(--border-strong); }

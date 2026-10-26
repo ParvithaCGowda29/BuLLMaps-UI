@@ -1,0 +1,35 @@
+/* SKILLS accordion rail (SkillsRail in shell.tsx). Tokens only. */
+.sk-head-actions { display: inline-flex; align-items: center; gap: 6px; }
+.sk-task { display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 12px 0 9px; border: 0; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.sk-task:hover { filter: brightness(1.08); }
+.sk-task:focus-visible, .sk-row:focus-visible { outline: none; box-shadow: var(--focus); }
+
+.sk-list { list-style: none; margin: 0; padding: 10px; flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; display: flex; flex-direction: column; gap: 2px; }
+.sk-list ul { list-style: none; margin: 0; padding: 0; }
+.sk-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 0 8px; border: 0; border-radius: 8px;
+  background: none; color: var(--text); text-align: left; cursor: pointer; font-size: 13px; }
+.sk-row:hover { background: var(--hover); }
+.sk-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sk-skill > .sk-row { font-weight: 600; }
+.sk-skill.on > .sk-row { background: var(--accent-soft); color: var(--accent); }
+.sk-count { flex: none; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--surface-3); color: var(--muted); font-size: 11px; font-weight: 600; }
+.sk-skill.on > .sk-row .sk-count { background: var(--surface); color: var(--accent); }
+.sk-chev { flex: none; display: inline-grid; color: var(--muted); transition: transform .15s ease; }
+.sk-row[aria-expanded="true"] > .sk-chev { transform: rotate(90deg); }
+
+/* Subskills: indented under the skill, same rings. */
+.sk-subs { margin: 2px 0 6px 17px !important; padding-left: 8px !important; border-left: 1.5px solid var(--border); display: flex; flex-direction: column; gap: 1px; }
+.sk-subrow { min-height: 36px; font-size: 12.5px; }
+.sk-sub.on > .sk-subrow { font-weight: 600; color: var(--accent); }
+
+/* Steps of the open subskill: small dot bullets, muted; the step a task starts with is highlighted. */
+.sk-steps { margin: 0 0 6px 33px !important; display: flex; flex-direction: column; gap: 2px; }
+.sk-steps li { position: relative; padding: 3px 4px 3px 14px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.sk-steps li::before { content: ''; position: absolute; left: 2px; top: .8em; width: 4px; height: 4px; border-radius: 50%; background: var(--faint); }
+.sk-steps li.on { color: var(--accent); font-weight: 600; }
+.sk-steps li.on::before { background: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .sk-chev { transition: none; } }
+/* RESULTS & EDITS header: the active skill as a muted '- Skill' suffix. */
+.ws-title::before { content: '-'; }
