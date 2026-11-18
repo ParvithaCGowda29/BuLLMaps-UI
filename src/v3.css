@@ -60,7 +60,7 @@
    taller one on every stage and the stage list never moves. The card is laid out but invisible on Upload. */
 .nv-top { display: grid; flex: none; }
 .nv-top > * { grid-area: 1 / 1; min-width: 0; }
-.nv-top[data-upload] > .nv-card { visibility: hidden; }
+.nv-top[data-upload] > .nv-card { display: none; }
 .nv-card { display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
 .nv-card-title { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
 .nv-search { margin-top: 8px; display: flex; align-items: center; gap: 6px; padding: 0 10px; min-height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--muted); }

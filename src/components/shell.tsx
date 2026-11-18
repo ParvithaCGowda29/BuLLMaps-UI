@@ -200,8 +200,8 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
         <PaneGrip pane="nav" />
       </header>
       <div className="nv-body">
-        {/* Upload swaps the search card for + Add files in the same slot; the card stays laid out (invisible) so the slot
-            keeps one height and the stages below never move between stages. */}
+        {/* Upload swaps the search card for + Add files; the card is display:none, so no empty
+            space sits between Add files and the skills list (per user, 18 Nov 2026). */}
         <div className="nv-top" data-upload={onUpload && snap ? '' : undefined}>
         {onUpload && snap && <UploadFilesBlock snap={snap} />}
         <div className="nv-card">
