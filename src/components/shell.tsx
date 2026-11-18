@@ -100,19 +100,76 @@ function ProfileMenu() {
   )
 }
 
-/** BuLLMaps navigation: the Router at the front and the ten execution skills behind it, in the owner's
- *  order and naming (her 10-skills list, 18 Nov 2026; master doc "BuLLMaps - Skill & Subskill mapping",
- *  5 Nov 2026). Every skill's sub-skills are the same four phases (master doc §5; "Agent Workflow" tab,
- *  BuLLM - BuLLMaps Workflow v0.1). The tagline under each name is the agency role from the master doc.
+/** BuLLMaps navigation: the ten execution skills in the owner's order and naming (her 10-skills list, 18 Nov
+ *  2026; master doc "BuLLMaps - Skill & Subskill mapping", 5 Nov 2026). The Router is not a nav entry (18 Nov
+ *  2026, per user): it is the voice intake, mapped to the middle pane. Each skill's four sub-skills are its own,
+ *  named and described from the "BuLLMaps" tab of her sub-skills spreadsheet (18 Nov 2026, per user; supersedes
+ *  the shared four phases). The tagline under each name is the agency role from the master doc.
  *  Skills have no screens yet, so rows only fold open - nothing here navigates or reports status. */
 interface Skill { id: string; label: string; icon: string; role: string; description: string }
-const PHASES = [
-  { n: 1, label: 'Research, Extract, Audit & Analyze', description: 'Find out what is needed and what is true today, starting from the previous cycle\'s results.' },
-  { n: 2, label: 'Recommend, Strategize, Plan & Client Review', description: 'Turn findings into a plan. The client reviews and approves the scope, the expected output, the audience and any budget.' },
-  { n: 3, label: 'Create, Fix, Optimize & Schedule', description: 'Produce the work as drafts, fix what is rejected, test it and set the timing. Nothing is live at this point.' },
-  { n: 4, label: 'Upload, Publish, Monitor & Report', description: 'Only after approval, publish or deliver, verify the result, monitor it and report back.' },
-]
-const ROUTER: Skill = { id: '0', label: 'Router / Concierge', icon: 'tb-robot', role: 'the front desk', description: 'Listens, works out what is being asked, keeps the business basics on file, asks one short question when something is missing, routes the work to the right skills, and controls every approval.' }
+interface SubSkill { n: number; label: string; description: string }
+const SUBSKILLS: Record<string, SubSkill[]> = {
+  '1': [
+    { n: 1, label: 'Search, Competitor & Lead Audits', description: 'Runs search, keyword, competitor, backlink, citation and lead-driver audits to show what is working and what is holding us back.' },
+    { n: 2, label: 'Channel & Asset Audits', description: 'Audits our LinkedIn, Google Business Profile, website and brand assets to find gaps and fixes.' },
+    { n: 3, label: 'Business & Customer Research', description: 'Discovers our offers, ideal customers, market size and which channels bring leads today.' },
+    { n: 4, label: 'Strategy, Budget & Plan', description: 'Turns audit findings into a strategy, budget, forecast and content plan.' },
+  ],
+  '2': [
+    { n: 1, label: 'Plan, Design & Platform Setup', description: 'Plans and builds the website foundation - structure, design, UX, hosting and WordPress setup.' },
+    { n: 2, label: 'Pages, Content & On-page SEO', description: 'Builds and optimizes every page type with content, images, on-page SEO and schema.' },
+    { n: 3, label: 'Forms, Tracking, Speed, Security & Backup', description: 'Sets up forms, tracking, speed, security, access control, privacy and backups.' },
+    { n: 4, label: 'Deploy, Launch, Test & Indexing', description: 'Deploys the site, runs pre-launch QA, and gets pages indexed and monitored after go-live.' },
+  ],
+  '3': [
+    { n: 1, label: 'Organic Search Ranking & On-page', description: 'Tracks rankings and improves pages so they rank higher in organic search.' },
+    { n: 2, label: 'Google Business Profile & Local Rank', description: 'Optimizes our Google Business Profile and improves local map rankings across our service areas.' },
+    { n: 3, label: 'AI Search (AEO / GEO)', description: 'Makes our business visible and cited in AI answers like ChatGPT, Gemini and Google AI.' },
+    { n: 4, label: 'Reputation, Consistency & Specialty SEO', description: 'Manages reviews, keeps business details consistent everywhere, and covers PR, video, image and ecommerce SEO.' },
+  ],
+  '4': [
+    { n: 1, label: 'Text', description: 'Writes and optimizes all written content - posts, pages, case studies, whitepapers and briefs.' },
+    { n: 2, label: 'Audio', description: 'Creates podcast and audio content.' },
+    { n: 3, label: 'Video', description: 'Creates videos from reels to long-form, and repurposes them for every channel.' },
+    { n: 4, label: 'Image', description: 'Creates images - banners, social posts, infographics, ad creatives and accessible alt text.' },
+  ],
+  '5': [
+    { n: 1, label: 'Targeting & Tracking Setup', description: 'Sets up ad audiences, budgets, bids and conversion tracking before spend starts.' },
+    { n: 2, label: 'Creative & Messaging', description: 'Creates ad copy, creatives and versions that match the landing page message.' },
+    { n: 3, label: 'Campaign Build & Launch', description: 'Builds and launches approved campaigns on Meta, Google and other ad platforms.' },
+    { n: 4, label: 'Optimize & Monitor', description: 'Improves live campaigns through A/B tests, search-term reviews, spend checks and lead-quality feedback.' },
+  ],
+  '6': [
+    { n: 1, label: 'Plan, Listen & Create', description: 'Plans the social calendar, listens to conversations and creates posts.' },
+    { n: 2, label: 'Publish & Schedule', description: 'Publishes and schedules posts across social platforms, GBP and the website.' },
+    { n: 3, label: 'Engage & Moderate', description: 'Replies to our audience and moderates the community.' },
+    { n: 4, label: 'Track & Learn', description: 'Tracks links and results, and runs experiments to learn what works.' },
+  ],
+  '7': [
+    { n: 1, label: 'Brand Identity & Consistency', description: 'Defines brand identity and messaging, and keeps every asset consistent.' },
+    { n: 2, label: 'Reputation & Mentions', description: 'Tracks mentions, manages reviews and reputation, and escalates crises.' },
+    { n: 3, label: 'Authority Building', description: 'Builds authority through backlinks, citations and influencer collaborations.' },
+    { n: 4, label: 'Traditional & Offline', description: 'Covers offline brand work - banners, print, conferences and meetups.' },
+  ],
+  '8': [
+    { n: 1, label: 'Capture & Clean', description: 'Captures every lead into the CRM and removes duplicates and spam.' },
+    { n: 2, label: 'Enrich & Score', description: 'Enriches leads with fit and intent data, and scores how qualified they are.' },
+    { n: 3, label: 'Define & Calibrate', description: 'Defines what counts as an MQL and keeps qualification calibrated with sales feedback.' },
+    { n: 4, label: 'Alert & Route', description: 'Alerts the right person and routes each qualified lead to sales or an appointment.' },
+  ],
+  '9': [
+    { n: 1, label: 'Sync & Hygiene', description: 'Keeps CRM data clean, mapped and deduplicated, and captures leads from every source.' },
+    { n: 2, label: 'Pipeline & Attribution', description: 'Tracks pipeline stages and ties revenue back to the source that brought it.' },
+    { n: 3, label: 'Follow-up Outreach', description: 'Runs lead follow-up over WhatsApp, email and LinkedIn.' },
+    { n: 4, label: 'Alerts, Nurture & Handoff', description: 'Sends lead alerts, runs nurture sequences and hands off to sales.' },
+  ],
+  '10': [
+    { n: 1, label: 'Report Requests & Data Pulls', description: 'Pulls analytics data and answers on-demand report requests.' },
+    { n: 2, label: 'Performance Reports', description: 'Reports on ads, social engagement, competitors and SEO performance.' },
+    { n: 3, label: 'Brand Report, Dashboard & Client Project Report', description: 'Builds brand reports, unified KPI dashboards and client project reports.' },
+    { n: 4, label: 'Weekly Summary, Publish & Distribute', description: 'Sends the weekly summary and publishes and distributes finished reports.' },
+  ],
+}
 const SKILLS: Skill[] = [
   { id: '1', label: 'Audit & Strategy', icon: 'gauge', role: 'the consultant', description: 'Checks where my marketing stands and tells me what to do next, with a simple plan.' },
   { id: '2', label: 'Website', icon: 'schema', role: 'the storefront', description: 'Fixes and improves my website so people find me on Google.' },
@@ -138,14 +195,14 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
   const openSkill = (id: string) => { setQuery(''); setOpen(s => new Set(s).add(id)) }
   // The search card is hidden on Upload, so a query typed elsewhere does not filter the skills there.
   const q = current === '1.1' && snap ? '' : query.trim().toLowerCase()
-  const phaseHits = (s: Skill) => PHASES.filter(p => p.label.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
+  const subHits = (s: Skill) => (SUBSKILLS[s.id] ?? []).filter(p => p.label.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
   const skillHit = (s: Skill) => s.label.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.role.includes(q)
-  const hits = q ? [ROUTER, ...SKILLS].filter(s => skillHit(s) || phaseHits(s).length) : []
+  const hits = q ? SKILLS.filter(s => skillHit(s) || subHits(s).length) : []
   const toggleRail = () => setUi(s => ({ shell: { ...s.shell, nav: !s.shell.nav } }))
   const onUpload = current === '1.1'
   const navSpot = usePaneSpot('nav')
 
-  // One skill group: the skill row folds open to its four phase sub-skills (inert until the skill screens exist).
+  // One skill group: the skill row folds open to its four sub-skills (inert until the skill screens exist).
   const skillGroup = (s: Skill) => {
     const isOpen = open.has(s.id)
     return (
@@ -158,7 +215,7 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
           </span>
         </button>
         <ul id={`nv-group-${s.id}`} className="nv-items" hidden={!isOpen}>
-          {PHASES.map(p => (
+          {(SUBSKILLS[s.id] ?? []).map(p => (
             <li key={p.n}><span className="nv-item nv-static" title={p.description}>
               <span className="nv-sub-num muted xs" aria-hidden>{s.id}.{p.n}</span>
               <span className="nv-label">{p.label}</span>
@@ -180,7 +237,7 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
             <Icon name={opens === 'left' ? 'panel-left' : 'panel-right'} size={14} />
           </button>
         </div>
-        <ul className="nv-mini">{[ROUTER, ...SKILLS].map(s => (
+        <ul className="nv-mini">{SKILLS.map(s => (
           <li key={s.id}><Tip text={s.label} note={s.role}>
             <button className="nv-dot" onClick={() => { toggleRail(); setOpen(prev => new Set(prev).add(s.id)) }} aria-label={s.label}>
               <Icon name={s.icon} size={15} />
@@ -219,9 +276,9 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
           <ul className="nv-items nv-results" aria-label="Search results">
             {hits.length ? hits.flatMap(s => [
               <li key={s.id}><button className="nv-item" onClick={() => openSkill(s.id)}>
-                <Icon name={s.icon} size={14} /><span className="nv-label">{s.label}</span><span className="muted xs">{s.id === '0' ? 'Router' : 'Skill'}</span>
+                <Icon name={s.icon} size={14} /><span className="nv-label">{s.label}</span><span className="muted xs">Skill</span>
               </button></li>,
-              ...phaseHits(s).map(p => (
+              ...subHits(s).map(p => (
                 <li key={`${s.id}.${p.n}`}><button className="nv-item" onClick={() => openSkill(s.id)} title={p.description}>
                   <span className="nv-sub-num muted xs" aria-hidden>{s.id}.{p.n}</span><span className="nv-label">{p.label}</span><span className="muted xs">{s.label}</span>
                 </button></li>
@@ -230,7 +287,6 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
           </ul>
         ) : (
           <ol className="nv-stages">
-            {skillGroup(ROUTER)}
             <li className="nv-divider" aria-hidden>Execution skills</li>
             {SKILLS.map(skillGroup)}
           </ol>
