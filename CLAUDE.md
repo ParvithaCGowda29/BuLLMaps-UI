@@ -7,7 +7,7 @@ React 19 + Vite + TypeScript. Refine (headless `@refinedev/core`, data layer onl
 - `cd server/laya-judge && npm start`: Laya SOW judge on :8787 (first start downloads the ~1.7 GB ONNX model to `~/.cache/receptron-laya`). The dev server proxies `/laya`.
 - Real Cognee: run the Cognee API server (`docker compose up` in topoteretes/cognee, `REQUIRE_AUTHENTICATION=false`, an LLM key, S3 read access), then `VITE_RAG_BACKEND=cognee npm run dev` (proxied at `/cognee`; `COGNEE_URL` overrides `http://localhost:8000`).
 
-- `npm run dev`: dev server, always **http://localhost:5174** (`strictPort`; fails instead of switching ports)
+- `npm run dev`: dev server, always **http://localhost:5188** (`strictPort`; fails instead of switching ports)
 - `npm run build`: `tsc --noEmit` + production build
 - `npm test`: unit tests (Node built-in runner): v3 screen registry/aliases, tracker evidence, Enterprise Assistant replies (`lib/assistant.test.ts`), RAG pipeline, SOW diff, and `lib/repair.test.ts` (prerequisites, certification/stale hash, SOW comparison, shared drafts, ISATVON names)
 - `npm run check`: mock backend gate self-check (`src/api/mock.check.ts`)

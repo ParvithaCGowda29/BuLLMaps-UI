@@ -33,15 +33,15 @@ npm install
 npm run dev
 ```
 
-The dev server runs on http://localhost:5174 (strict port; stop whatever else uses 5174). Sign in with any work email and a password of 8 or more characters: sign-in is a development mock. Production builds fail closed and refuse every sign-in.
+The dev server runs on http://localhost:5188 (strict port; stop whatever else uses 5188). Sign in with any work email and a password of 8 or more characters: sign-in is a development mock. Production builds fail closed and refuse every sign-in.
 
 ## Scripts
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start the Vite dev server on port 5174 |
+| `npm run dev` | Start the Vite dev server on port 5188 |
 | `npm run build` | Type-check (`tsc --noEmit`) and build for production into `dist/` |
-| `npm run preview` | Serve the production build locally on port 5174 |
+| `npm run preview` | Serve the production build locally on port 5188 |
 | `npm test` | Run the unit tests (tracker, evidence, RAG pipeline, SOW diff, scan gate, standardize, goal, judge) |
 | `npm run check` | Validate the mock API adapter |
 | `npm run storybook` | Start Storybook on port 6006 |
