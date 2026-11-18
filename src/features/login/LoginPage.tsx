@@ -170,7 +170,7 @@ function Showcase() {
       <img src={panel} alt="" className="login-panel-art" width={580} height={440} />
       <div className="login-panel-body">
         <ul className="login-chips" aria-label="Product areas">
-          <li>Four stages</li><li>FDE Workbench</li><li>Sandbox</li>
+          <li>Voice-first</li><li>Router</li><li>Concierge</li><li>10 skills</li>
         </ul>
         <div className="login-rotator" onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)}
           onFocus={() => setHeld(true)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHeld(false) }}>
