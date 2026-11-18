@@ -3,11 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useUppyState } from '@uppy/react'
 import type { Snapshot } from '../api/types'
 import { setUi, uppy, useUi } from '../lib/store'
-import { goScreen, navigate, usePath } from '../lib/route'
-import { GLOBAL_ROUTES, STATUS_LABEL, SUBTASKS, TASKS, globalByPath, screenByPath, screenLabel, stageOf, subtasksOf, taskStatus, type TrackerStatus } from '../tracker/trackerConfig.ts'
-import { useStatuses } from '../tracker/useTrackerStore'
+import { navigate, usePath } from '../lib/route'
+import { GLOBAL_ROUTES, globalByPath, screenByPath, screenLabel, stageOf } from '../tracker/trackerConfig.ts'
 import { signOut, switchToMasters, useSession } from '../features/login/session'
-import { AutoChip, HitlChip, Icon, Tip, fmtFull, fmtTime } from './ui'
+import { Icon, Tip, fmtFull, fmtTime } from './ui'
 import { AppSettingsModal } from './AppSettingsModal'
 import { BrandLockup } from './BrandLockup'
 import { UploadFilesBlock } from '../steps/UploadPanes'
@@ -101,45 +100,74 @@ function ProfileMenu() {
   )
 }
 
-const STAGE_TEXT: Record<TrackerStatus, string> = { not_started: 'Waiting', in_progress: 'In progress', needs_review: 'Needs review', done: 'Done', blocked: 'Blocked' }
-
-/** NAVIGATE: the four workflow stages and their screens (icon + label, no numbers). The only workflow navigation. */
-/** A Workbench / Validation step's state in the rail: Ready (dot) · Running (spinner) · Failed. Done is the check.
- *  Needs review shows no mark and locked steps no lock icon (per user, 5 Nov 2026); the lock reason stays in the tooltip. */
-function StepMark({ st }: { st: TrackerStatus }) {
-  if (st === 'needs_review') return null
-  const [icon, cls, label] = st === 'in_progress' ? ['spinner', 'nv-st-run', 'Running']
-    : st === 'blocked' ? ['alert', 'nv-st-fail', 'Failed'] : ['dot', 'nv-st-ready', 'Ready']
-  return <span className={`nv-st ${cls}`} title={label} aria-hidden><Icon name={icon} size={11} spin={icon === 'spinner'} /></span>
-}
+/** BuLLMaps navigation: the Router at the front and the ten execution skills behind it, in the owner's
+ *  order and naming (her 10-skills list, 18 Nov 2026; master doc "BuLLMaps - Skill & Subskill mapping",
+ *  5 Nov 2026). Every skill's sub-skills are the same four phases (master doc §5; "Agent Workflow" tab,
+ *  BuLLM - BuLLMaps Workflow v0.1). The tagline under each name is the agency role from the master doc.
+ *  Skills have no screens yet, so rows only fold open - nothing here navigates or reports status. */
+interface Skill { id: string; label: string; icon: string; role: string; description: string }
+const PHASES = [
+  { n: 1, label: 'Research, Extract, Audit & Analyze', description: 'Find out what is needed and what is true today, starting from the previous cycle\'s results.' },
+  { n: 2, label: 'Recommend, Strategize, Plan & Client Review', description: 'Turn findings into a plan. The client reviews and approves the scope, the expected output, the audience and any budget.' },
+  { n: 3, label: 'Create, Fix, Optimize & Schedule', description: 'Produce the work as drafts, fix what is rejected, test it and set the timing. Nothing is live at this point.' },
+  { n: 4, label: 'Upload, Publish, Monitor & Report', description: 'Only after approval, publish or deliver, verify the result, monitor it and report back.' },
+]
+const ROUTER: Skill = { id: '0', label: 'Router / Concierge', icon: 'tb-robot', role: 'the front desk', description: 'Listens, works out what is being asked, keeps the business basics on file, asks one short question when something is missing, routes the work to the right skills, and controls every approval.' }
+const SKILLS: Skill[] = [
+  { id: '1', label: 'Audit & Strategy', icon: 'gauge', role: 'the consultant', description: 'Checks where my marketing stands and tells me what to do next, with a simple plan.' },
+  { id: '2', label: 'Website', icon: 'schema', role: 'the storefront', description: 'Fixes and improves my website so people find me on Google.' },
+  { id: '3', label: 'SEO (Organic, Local & AEO/GEO)', icon: 'tb-search', role: 'the signposts', description: 'Improves visibility on Google, on Maps and in AI answers.' },
+  { id: '4', label: 'Content & Creatives', icon: 'tb-photo', role: 'the studio', description: 'Writes and makes text, image, video and audio content.' },
+  { id: '5', label: 'Paid Ads', icon: 'tb-target', role: 'the media buyer', description: 'Runs ads across platforms inside the approved budget.' },
+  { id: '6', label: 'Social Media', icon: 'tb-thumb-up', role: 'the noticeboard', description: 'Publishes and answers on social channels.' },
+  { id: '7', label: 'Brand', icon: 'shield', role: 'the brand guardian', description: 'Keeps the look and reputation consistent.' },
+  { id: '8', label: 'MQL', icon: 'tb-inbox', role: 'the lead sorter', description: 'Cleans, scores and routes every marketing enquiry.' },
+  { id: '9', label: 'CRM', icon: 'tb-briefcase', role: 'the notebook', description: 'The customer notebook: records and follow-up.' },
+  { id: '10', label: 'Reports & Publishing', icon: 'graph', role: 'the report desk', description: 'Puts the numbers together and reports back.' },
+]
 
 export function NavRail({ snap }: { snap?: Snapshot }) {
   const path = usePath()
   const current = navScreen(path)
-  const currentStage = current ? stageOf(current)?.id : undefined
-  const statuses = useStatuses()
   const drawer = useUi(s => s.drawer)
   // Narrow screens open the pane as an overlay drawer: always show the full rail there (17 Nov 2026).
   const collapsed = useUi(s => s.shell.nav) && drawer !== 'nav'
-  const [open, setOpen] = useState<Set<string>>(() => new Set(currentStage ? [currentStage] : []))
+  const [open, setOpen] = useState<Set<string>>(() => new Set())
   const [query, setQuery] = useState('')
-  // Navigating into another stage opens its group (never closes the ones the user opened).
-  useEffect(() => { if (currentStage) setOpen(s => s.has(currentStage) ? s : new Set(s).add(currentStage)) }, [currentStage])
-  const toggleStage = (id: string) => setOpen(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
-  const go = (id: string) => { goScreen(id, true); setUi({ drawer: null }) }
-  const lockOf = (id: string) => {
-    const step = SUBTASKS.find(s => s.id === id)?.step
-    const info = step ? snap?.steps[step - 1] : undefined
-    return info?.state === 'locked' ? info.reason : undefined
-  }
-  // The search card is hidden on Upload, so a query typed elsewhere does not filter the stages there.
+  const toggleSkill = (id: string) => setOpen(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
+  const openSkill = (id: string) => { setQuery(''); setOpen(s => new Set(s).add(id)) }
+  // The search card is hidden on Upload, so a query typed elsewhere does not filter the skills there.
   const q = current === '1.1' && snap ? '' : query.trim().toLowerCase()
-  const hits = q ? SUBTASKS.filter(s => !s.hidden && (s.label.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || stageOf(s.id)!.label.toLowerCase().includes(q))) : []
+  const phaseHits = (s: Skill) => PHASES.filter(p => p.label.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
+  const skillHit = (s: Skill) => s.label.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.role.includes(q)
+  const hits = q ? [ROUTER, ...SKILLS].filter(s => skillHit(s) || phaseHits(s).length) : []
   const toggleRail = () => setUi(s => ({ shell: { ...s.shell, nav: !s.shell.nav } }))
   const onUpload = current === '1.1'
-  // The stage the work is at: the first one not done (none once every stage is done).
-  const active = TASKS.findIndex(t => taskStatus(t.id, statuses) !== 'done')
   const navSpot = usePaneSpot('nav')
+
+  // One skill group: the skill row folds open to its four phase sub-skills (inert until the skill screens exist).
+  const skillGroup = (s: Skill) => {
+    const isOpen = open.has(s.id)
+    return (
+      <li key={s.id} className="nv-stage">
+        <button className="nv-stage-btn" aria-expanded={isOpen} aria-controls={`nv-group-${s.id}`} onClick={() => toggleSkill(s.id)} title={s.description}>
+          <span className="nv-mark" aria-hidden><Icon name={s.icon} size={15} /></span>
+          <span className="nv-stage-text">
+            <span className="nv-stage-name">{s.label}</span>
+            <span className="nv-stage-status">{s.role}</span>
+          </span>
+        </button>
+        <ul id={`nv-group-${s.id}`} className="nv-items" hidden={!isOpen}>
+          {PHASES.map(p => (
+            <li key={p.n}><span className="nv-item nv-static" title={p.description}>
+              <span className="nv-sub-num muted xs" aria-hidden>{s.id}.{p.n}</span>
+              <span className="nv-label">{p.label}</span>
+            </span></li>
+          ))}
+        </ul>
+      </li>
+    )
+  }
 
   // Collapsed (17 Nov 2026, per user): a slim icon rail - the stage icons on their dotted connector, active
   // stage highlighted, names in tooltips; the top chevron expands again. Works at either edge (data-opens).
@@ -152,15 +180,13 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
             <Icon name={opens === 'left' ? 'panel-left' : 'panel-right'} size={14} />
           </button>
         </div>
-        <ul className="nv-mini">{TASKS.map((t, i) => {
-          const st = taskStatus(t.id, statuses)
-          return <li key={t.id}><Tip text={t.label} note={i === active ? `Current stage · ${STAGE_TEXT[st]}` : STAGE_TEXT[st]}>
-            <button className={`nv-dot s-${st} ${currentStage === t.id ? 'on' : ''}`} onClick={() => { toggleRail(); setOpen(s => new Set(s).add(t.id)) }}
-              aria-label={`${t.label}: ${STAGE_TEXT[st]}${i === active ? ', current stage' : ''}`}>
-              <Icon name={st === 'done' ? 'check' : st === 'blocked' ? 'alert' : t.icon} size={15} />{i === active && st !== 'blocked' && <span className="nv-active" aria-hidden />}
+        <ul className="nv-mini">{[ROUTER, ...SKILLS].map(s => (
+          <li key={s.id}><Tip text={s.label} note={s.role}>
+            <button className="nv-dot" onClick={() => { toggleRail(); setOpen(prev => new Set(prev).add(s.id)) }} aria-label={s.label}>
+              <Icon name={s.icon} size={15} />
             </button>
-          </Tip><span className="nv-mini-label" aria-hidden>{t.label}</span></li>
-        })}</ul>
+          </Tip><span className="nv-mini-label" aria-hidden>{s.label}</span></li>
+        ))}</ul>
       </nav>
     )
   }
@@ -179,69 +205,34 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
         <div className="nv-top" data-upload={onUpload && snap ? '' : undefined}>
         {onUpload && snap && <UploadFilesBlock snap={snap} />}
         <div className="nv-card">
-          <strong className="nv-card-title">BAM pipeline</strong>
-          <span className="muted xs">Track and manage your workflow</span>
+          <strong className="nv-card-title">BuLLMaps</strong>
+          <span className="muted xs">The marketing agent</span>
           <label className="nv-search">
             <Icon name="search" size={13} />
-            <span className="sr-only">Search workflow steps</span>
-            <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search workflow steps"
+            <span className="sr-only">Search skills</span>
+            <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search skills"
               onKeyDown={e => { if (e.key === 'Escape') setQuery('') }} />
           </label>
         </div>
         </div>
         {q ? (
           <ul className="nv-items nv-results" aria-label="Search results">
-            {hits.length ? hits.map(s => (
-              <li key={s.id}><button className="nv-item" onClick={() => { setQuery(''); go(s.id) }}>
-                <Icon name={s.icon} size={14} /><span className="nv-label">{s.label}</span><span className="muted xs">{stageOf(s.id)!.label}</span>
-              </button></li>
-            )) : <li className="muted xs nv-none">No step matches “{query}”.</li>}
+            {hits.length ? hits.flatMap(s => [
+              <li key={s.id}><button className="nv-item" onClick={() => openSkill(s.id)}>
+                <Icon name={s.icon} size={14} /><span className="nv-label">{s.label}</span><span className="muted xs">{s.id === '0' ? 'Router' : 'Skill'}</span>
+              </button></li>,
+              ...phaseHits(s).map(p => (
+                <li key={`${s.id}.${p.n}`}><button className="nv-item" onClick={() => openSkill(s.id)} title={p.description}>
+                  <span className="nv-sub-num muted xs" aria-hidden>{s.id}.{p.n}</span><span className="nv-label">{p.label}</span><span className="muted xs">{s.label}</span>
+                </button></li>
+              )),
+            ]) : <li className="muted xs nv-none">No skill matches “{query}”.</li>}
           </ul>
         ) : (
           <ol className="nv-stages">
-            {TASKS.map((t, i) => {
-              const st = taskStatus(t.id, statuses)
-              const isOpen = open.has(t.id)
-                            const here = currentStage === t.id
-              return (
-                <li key={t.id} className={`nv-stage s-${st} ${here ? 'here' : ''}`}>
-                  {i < TASKS.length - 1 && <span className="nv-line" aria-hidden />}
-                  <button className="nv-stage-btn" aria-expanded={isOpen} aria-controls={`nv-group-${t.id}`} onClick={() => toggleStage(t.id)}>
-                    {/* Check only when the stage is done; the current stage (first one not done) gets the active dot. */}
-                    <span className="nv-mark" aria-hidden>{st === 'done' ? <Icon name="check" size={15} /> : st === 'blocked' ? <Icon name="alert" size={14} /> : <Icon name={t.icon} size={15} />}
-                      {i === active && st !== 'blocked' && <span className="nv-active" />}</span>
-                    <span className="nv-stage-text">
-                      <span className="nv-stage-name">{t.label}{i === active && <span className="sr-only">, current stage</span>}</span>
-                      <span className="nv-stage-status">{STAGE_TEXT[st]}</span>
-                    </span>
-                  </button>
-                  <ul id={`nv-group-${t.id}`} className="nv-items" hidden={!isOpen}>
-                    {subtasksOf(t.id).map(s => {
-                      const lock = lockOf(s.id)
-                      const sst = statuses[s.id] ?? 'not_started'
-                      // Workbench and Validation are human-gated: every step shows its state (never looks skipped).
-                      const gated = s.parentId === '3' || s.parentId === '4'
-                      return (
-                        <li key={s.id} className={s.mode ? 'nv-auto-row' : undefined}>
-                          <button className={`nv-item ${current === s.id ? 'on' : ''}`} aria-current={current === s.id ? 'page' : undefined} onClick={() => go(s.id)}
-                            title={lock ? `Locked: ${lock}` : s.description} aria-describedby={lock ? `nv-lock-${s.id}` : undefined}>
-                            <Icon name={s.icon} size={16} />
-                            <span className="nv-label">{s.label}</span>{s.optional && <span className="nv-opt">optional</span>}{s.mode && <span className="nv-auto-slot" aria-hidden />}
-                            {sst === 'done' ? <span className="nv-done" aria-hidden><Icon name="check" size={11} /></span>
-                              : !lock && gated ? <StepMark st={sst} /> : null}
-                            <span className="sr-only">{lock ? '' : `, ${STATUS_LABEL[sst]}`}</span>
-                          </button>
-                          {/* The chip is focusable, so it sits beside the button (never inside it), over the slot left of the check. */}
-                          {s.mode === 'automated' && <AutoChip className={sst === 'done' ? 'nv-auto has-mark' : 'nv-auto'} />}
-                          {s.mode === 'hitl' && <HitlChip className={sst === 'done' ? 'nv-auto has-mark' : 'nv-auto'} />}
-                          {lock && <span id={`nv-lock-${s.id}`} className="sr-only">Locked: {lock}</span>}
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </li>
-              )
-            })}
+            {skillGroup(ROUTER)}
+            <li className="nv-divider" aria-hidden>Execution skills</li>
+            {SKILLS.map(skillGroup)}
           </ol>
         )}
       </div>
