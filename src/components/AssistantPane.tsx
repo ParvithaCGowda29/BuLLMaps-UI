@@ -2,11 +2,12 @@ import { Hairline, PaneGrip, paneHeaderProps } from './PaneLayout'
 // Enterprise Assistant (middle pane), built on assistant-ui primitives with a local runtime. The thread lives for the
 // whole session and is never keyed by screen, so navigating keeps the conversation. Declutter (14 Oct 2026): the pane
 // is only the thread and the composer (input, Dictate, send). The chat holds no unprompted status notes
-// (5 Nov 2026): an assistant message only answers something the person asked; the live screen note sits in the empty
-// thread's greeting instead. On Ingestion screens the intake objective is captured through the composer and stored exactly as before
+// (5 Nov 2026): an assistant message only answers something the person asked. On Ingestion screens the intake
+// objective is captured through the composer and stored exactly as before
 // (`fdeGoals`, used by SOW generation). Replies come from live workflow state (lib/assistant.ts); nothing here
 // approves, certifies, hands over or deploys.
-// Chat layout (22 Oct 2026, assistant pane design): ChatGPT-style thread. Empty = greeting + composer + starter chips;
+// Chat layout (22 Oct 2026, assistant pane design): ChatGPT-style thread. Empty = just the BuLL logo + composer
+// (18 Nov 2026, per user: no orb, greeting or ISATVON draft in the middle pane);
 // then accent user bubbles (editable; edit + resend regenerates), assistant replies beside a "B" avatar with an
 // always-visible action bar, streamed with Stop. "+" attaches files to the chat for questions only: they are never
 // uploaded or ingested (pack files go in through + Add files on the left).
@@ -16,7 +17,7 @@ import { useUppyState } from '@uppy/react'
 import { ActionBarPrimitive, AssistantRuntimeProvider, AttachmentPrimitive, AuiIf, ComposerPrimitive, MessagePartPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState, useLocalRuntime, type AttachmentAdapter, type ChatModelAdapter, type ExportedMessageRepository, type ThreadMessage } from '@assistant-ui/react'
 import { createDictation, fmtClock, stopDictation, useDictate } from './dictation'
 import type { Snapshot } from '../api/types'
-import { CONFIRM_OBJECTIVE, attachmentReply, chipReply, intentOf, objectiveReply, reply, screenNote, type AssistantFacts } from '../lib/assistant.ts'
+import { CONFIRM_OBJECTIVE, attachmentReply, chipReply, intentOf, objectiveReply, reply, type AssistantFacts } from '../lib/assistant.ts'
 import { prerequisite } from '../lib/prereq'
 import { activeScreen } from '../lib/route'
 import { setUi, uppy, useUi } from '../lib/store'
@@ -29,7 +30,6 @@ import { JOBS, NODES, SCHEMAS } from '../rag/mockData.ts'
 import { useReadiness } from '../rag/RagSeamless'
 import { askQuestion, useChecks, useRunState, type Row } from '../rag/contextQuestions'
 import { Icon, Tip, fmtBytes } from './ui'
-import Orb from './reactbits/Orb'
 import bull from '../assets/login/bull-head-transparent.png'
 import { UploadMessages, fileCounts, useUploadRows } from '../steps/UploadPanes'
 import { applyEdit, atGoalEntry, continueGoal, conversationChips, draftReply, getGoal, setGoal, useGoal, type Draft } from '../lib/goal.ts'
@@ -214,8 +214,6 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
     shownProject.current = project
   }, [project, runtime])
   // Upload progress and "files added" are not posted in chat (4 Nov 2026): the files and outputs panes hold every count and reason.
-  // The live screen note (5 Nov 2026): shown in the empty thread's greeting, never posted as a chat message.
-  const note = screenNote(facts)
   // Verify (5 Nov 2026): a finished run is not posted in chat - chat only answers questions a person asks.
   // The sample results, failed answers and the gate line stay in the Verify panes.
   const toggle = () => setUi(s => ({ shell: { ...s.shell, assistant: !s.shell.assistant } }))
@@ -244,7 +242,7 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
           <button className="btn btn-ghost sm as-hide" onClick={toggle} aria-expanded aria-label="Hide assistant" title="Hide assistant"><Icon name="panel-left" size={14} /></button>
         </header>
         <ScreenCtx.Provider value={screenId}>
-          <ThreadBody snap={snap} screenId={screenId} note={note} capture={!!facts.intake?.capture} files={counts.totalFiles}
+          <ThreadBody snap={snap} screenId={screenId} capture={!!facts.intake?.capture} files={counts.totalFiles}
             chipDraft={chipDraft} />
         </ScreenCtx.Provider>
       </aside>
@@ -254,7 +252,7 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
 }
 
 /** Empty: the greeting with the composer and starter chips centred. Otherwise the thread, then the composer. */
-function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap: Snapshot; screenId?: string; note: string; capture: boolean; files: number; chipDraft: Draft | null }) {
+function ThreadBody({ snap, screenId, capture, files, chipDraft }: { snap: Snapshot; screenId?: string; capture: boolean; files: number; chipDraft: Draft | null }) {
   const empty = useAuiState(s => s.thread.messages.length === 0) && screenId !== '2.3'
   // Chips (goal-flow fine-tuning v2, 29 Oct 2026): only from the draft, only once files are uploaded, at most two.
   // Messages sent before the chips appeared do not count; after the first one sent since, only follow-ups to the
@@ -277,7 +275,7 @@ function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap:
     [chipDraft, running, hasOutput, names, since, userTexts])
   useEffect(() => { if (!empty) continueGoal() }, [empty]) // asking something from the fresh entry also continues the project
   const composer = <Composer capture={capture} chips={chips} />
-  // The first message: the idle Orb and greeting fade out over the conversation as it fades in (~300ms, no snap).
+  // The first message: the idle BuLL logo fades out over the conversation as it fades in (~300ms, no snap).
   const [leaving, setLeaving] = useState(false)
   const wasEmpty = useRef(empty)
   useEffect(() => { if (wasEmpty.current && !empty) setLeaving(true); wasEmpty.current = empty }, [empty])
@@ -286,18 +284,13 @@ function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap:
     <ThreadPrimitive.Root className="as-thread">
       {/* Files dropped on the pane attach to the chat (questions only), like "+". */}
       <ComposerPrimitive.AttachmentDropzone className="as-dropzone">
-        {/* Goal sent, nothing else said yet: the pane stays empty with just the BuLL logo (18 Nov 2026, per user) -
-            no ISATVON draft in the chat. The draft still drives the output editor on the right. */}
-        {empty && hasDraft && !atEntry ? <div className="as-empty">
+        {/* Nothing said yet: the pane stays empty with just the BuLL logo (18 Nov 2026, per user) - no ISATVON
+            draft, no orb or greeting. A saved goal's draft still drives the output editor on the right. */}
+        {empty ? <div className="as-empty">
           <img src={bull} alt="BuLL" className="as-bull" />
           {composer}
-        </div> : empty ? <div className="as-empty">
-          <IdleOrb />
-          <h3 className="as-hello">How can I help you today?</h3>
-          <p className="as-sub" role="status">{note}</p>
-          {composer}
         </div> : <>
-          {leaving && screenId !== '1.1' && <div className="as-empty as-empty-ghost" aria-hidden><IdleOrb paused /><h3 className="as-hello">How can I help you today?</h3></div>}
+          {leaving && screenId !== '1.1' && <div className="as-empty as-empty-ghost" aria-hidden><img src={bull} alt="" className="as-bull" /></div>}
           {/* One persistent list: stage updates are messages in it (never a replaced note). Only live progress
               (a Verify run in flight, uploads in flight) sits after the messages until it finishes. */}
           <ThreadPrimitive.Viewport className={`as-viewport${leaving ? ' as-fade-in' : ''}`}>
@@ -311,16 +304,6 @@ function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap:
       </ComposerPrimitive.AttachmentDropzone>
     </ThreadPrimitive.Root>
   )
-}
-
-// Style-guide blues only: the accent, a light tint of it (the swirl blends these two, so it must differ enough to read),
-// and a shadow tone. The Orb parses colour strings, not CSS vars.
-const ORB = { light: { colors: ['#F2F9FD', '#A9BFF5', '#C5D0E1'], background: '#FFFFFF' }, dark: { colors: ['#5B83F2', '#9DB6F7', '#142540'], background: '#101E32' } }
-/** The idle-assistant Orb above the greeting: slow, low hover lean, dimmed (in CSS: its own opacity greys a light background). */
-function IdleOrb({ paused }: { paused?: boolean }) {
-  const o = ORB[useUi(s => s.theme)]
-  return <div className="as-orb" aria-hidden><Orb colors={o.colors} backgroundColor={o.background} speed={1.05} hoverIntensity={0.3} glow={0.8}
-    size={1} rotateOnHover={false} clickPulse={false} intro={!paused} paused={paused} /></div>
 }
 
 /** Attachment cards, the rounded composer (+ · input · Dictate · Send / Stop), then the suggestion chips. */
