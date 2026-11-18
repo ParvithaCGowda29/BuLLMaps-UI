@@ -241,7 +241,9 @@ const GOAL_KEY = 'bam-goal-v2'
 let gs: GoalState = (() => {
   try { localStorage.removeItem('bam-goal') } catch { /* blocked */ }
   try { const s = JSON.parse(localStorage.getItem(GOAL_KEY) ?? 'null') as GoalState | null; if (s) return { ...s, draft: revive(s.draft) } } catch { /* none or blocked */ }
-  return { goal: EXAMPLE, draft: null, approved: false }
+  // Fresh start (18 Nov 2026, per user): no expand-goal step - open directly in the three-pane UI with the
+  // example goal already expanded into a draft, so Add files works from the first paint.
+  return { goal: EXAMPLE, draft: expandGoal(EXAMPLE), approved: false, text: sentence(EXAMPLE) }
 })()
 const gsubs = new Set<() => void>()
 export function setGoal(patch: Partial<GoalState> | ((s: GoalState) => Partial<GoalState>)) {
@@ -250,11 +252,10 @@ export function setGoal(patch: Partial<GoalState> | ((s: GoalState) => Partial<G
   gsubs.forEach(f => f())
 }
 export const getGoal = () => gs
-export const resetGoal = () => setGoal({ goal: EXAMPLE, draft: null, approved: false, text: '' })
-/** Fresh entry (5 Nov 2026, per user): a (re)load that revives a saved goal always starts at the single-pane goal
- *  entry with the saved goal pre-filled, and Enter continues the saved project exactly as stored (draft edits and
- *  uploaded files survive). Session-scoped only - nothing is cleared from storage. */
-let entry = !!gs.draft
+export const resetGoal = () => setGoal({ goal: EXAMPLE, draft: expandGoal(EXAMPLE), approved: false, text: sentence(EXAMPLE) })
+/** Fresh entry (5 Nov 2026, per user; superseded 18 Nov 2026, per user): loads no longer start at the
+ *  single-pane goal entry - the app opens directly in the three-pane UI. Session-scoped only. */
+let entry = false
 export const atGoalEntry = () => entry && !!gs.draft
 export function continueGoal() { if (!entry) return; entry = false; gsubs.forEach(f => f()) }
 export const useGoal = <T,>(select: (s: GoalState) => T) =>
