@@ -51,16 +51,16 @@ test('goal: editor HTML round-trips into the sections', () => {
   assert.equal(readHtml(d, edited).sections.O, '<strong>Signed</strong> quote with cost breakdown, approval status and an audit trail.')
 })
 
-test('goal: Add files opens as soon as the goal is expanded (no approval step)', () => {
+test('goal: Add files is open from the first paint (no goal step, 18 Nov 2026)', () => {
   const draft = expandGoal(EXAMPLE)
-  assert.equal(canAddFiles({ goal: EXAMPLE, draft: null, approved: false }), false)
+  assert.equal(canAddFiles({ goal: EXAMPLE, draft: null, approved: false }), true)
   assert.equal(canAddFiles({ goal: EXAMPLE, draft, approved: false }), true)
 })
 
-test('goal: panes open in order - middle, then files, then outputs', () => {
+test('goal: all three panes open from the first paint (no goal step, 18 Nov 2026)', () => {
   const draft = expandGoal(EXAMPLE)
-  assert.equal(goalStage({ goal: EXAMPLE, draft: null, approved: false }, 0), 1)
-  assert.equal(goalStage({ goal: EXAMPLE, draft, approved: true }, 0), 2)
+  assert.equal(goalStage({ goal: EXAMPLE, draft: null, approved: false }, 0), 3)
+  assert.equal(goalStage({ goal: EXAMPLE, draft, approved: true }, 0), 3)
   assert.equal(goalStage({ goal: EXAMPLE, draft, approved: true }, 2), 3)
 })
 

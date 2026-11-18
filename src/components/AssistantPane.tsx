@@ -32,7 +32,7 @@ import { Icon, Tip, fmtBytes } from './ui'
 import Orb from './reactbits/Orb'
 import bull from '../assets/login/bull-head-transparent.png'
 import { UploadMessages, fileCounts, useUploadRows } from '../steps/UploadPanes'
-import { GoalCapture, GoalExpansion } from '../steps/GoalPanes'
+import { GoalExpansion } from '../steps/GoalPanes'
 import { applyEdit, atGoalEntry, continueGoal, conversationChips, draftReply, getGoal, setGoal, useGoal, type Draft } from '../lib/goal.ts'
 
 
@@ -287,11 +287,11 @@ function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap:
     <ThreadPrimitive.Root className="as-thread">
       {/* Files dropped on the pane attach to the chat (questions only), like "+". */}
       <ComposerPrimitive.AttachmentDropzone className="as-dropzone">
-        {/* Upload, nothing said yet: the goal capture (29 Oct 2026) in place of the greeting. */}
-        {empty && screenId === '1.1' ? <>
-          {/* The goal box is this screen's chat (5 Nov 2026): no second composer or suggestions under the capture. */}
-          <div className="as-viewport">{hasDraft && !atEntry ? <GoalExpansion /> : <GoalCapture />}</div>
-          {hasDraft && !atEntry && composer}
+        {/* Upload with a goal on file, nothing said yet: the expanded draft in place of the greeting (29 Oct 2026).
+            No goal step (18 Nov 2026, per user): without a saved goal the regular greeting shows instead. */}
+        {empty && screenId === '1.1' && hasDraft && !atEntry ? <>
+          <div className="as-viewport"><GoalExpansion /></div>
+          {composer}
         </> : empty && hasDraft && !atEntry ? <>
           {/* Continuity (5 Nov 2026): the expanded goal stays at the top of the chat on every screen. */}
           <div className="as-viewport"><GoalExpansion /></div>

@@ -241,9 +241,9 @@ const GOAL_KEY = 'bam-goal-v2'
 let gs: GoalState = (() => {
   try { localStorage.removeItem('bam-goal') } catch { /* blocked */ }
   try { const s = JSON.parse(localStorage.getItem(GOAL_KEY) ?? 'null') as GoalState | null; if (s) return { ...s, draft: revive(s.draft) } } catch { /* none or blocked */ }
-  // Fresh start (18 Nov 2026, per user): no expand-goal step - open directly in the three-pane UI with the
-  // example goal already expanded into a draft, so Add files works from the first paint.
-  return { goal: EXAMPLE, draft: expandGoal(EXAMPLE), approved: false, text: sentence(EXAMPLE) }
+  // Fresh start (18 Nov 2026, per user): no expand-goal step and no invented goal - open directly in the
+  // three-pane UI with an empty conversation. A saved session keeps its own goal and draft.
+  return { goal: EXAMPLE, draft: null, approved: false }
 })()
 const gsubs = new Set<() => void>()
 export function setGoal(patch: Partial<GoalState> | ((s: GoalState) => Partial<GoalState>)) {
@@ -252,7 +252,7 @@ export function setGoal(patch: Partial<GoalState> | ((s: GoalState) => Partial<G
   gsubs.forEach(f => f())
 }
 export const getGoal = () => gs
-export const resetGoal = () => setGoal({ goal: EXAMPLE, draft: expandGoal(EXAMPLE), approved: false, text: sentence(EXAMPLE) })
+export const resetGoal = () => setGoal({ goal: EXAMPLE, draft: null, approved: false, text: '' })
 /** Fresh entry (5 Nov 2026, per user; superseded 18 Nov 2026, per user): loads no longer start at the
  *  single-pane goal entry - the app opens directly in the three-pane UI. Session-scoped only. */
 let entry = false
@@ -260,15 +260,16 @@ export const atGoalEntry = () => entry && !!gs.draft
 export function continueGoal() { if (!entry) return; entry = false; gsubs.forEach(f => f()) }
 export const useGoal = <T,>(select: (s: GoalState) => T) =>
   useSyncExternalStore(cb => { gsubs.add(cb); return () => { gsubs.delete(cb) } }, () => select(gs))
-/** "+ Add files" (4 Nov 2026, no approval gate): opens as soon as the goal is expanded into a draft. */
-export const canAddFiles = (s: GoalState) => !!s.draft
+/** "+ Add files" (4 Nov 2026, no approval gate; 18 Nov 2026, per user: no goal step): open from the first paint. */
+export const canAddFiles = (_s: GoalState) => true
 /** The one lock every upload path checks (Add files menu, picker, drops, the review dialog's Add more, the uploader). */
 export const addFilesLocked = () => !canAddFiles(getGoal())
 /** The draft now lives in the middle-pane chat (4 Nov 2026), never in the right pane. */
 export const showsDraft = (_s: GoalState, _files: number) => false
 
-/** Pane progression (4 Nov 2026): 1 = middle pane only, 2 = goal expanded (files pane opens), 3 = files added (outputs pane opens). */
-export const goalStage = (s: GoalState, files: number): 1 | 2 | 3 => !s.draft || atGoalEntry() ? 1 : files > 0 ? 3 : 2
+/** Pane progression (4 Nov 2026; 18 Nov 2026, per user: no goal step): the full three-pane shell from the first
+ *  paint - the outputs pane shows its zero-file skeleton until files arrive. Stage 1 was the removed goal entry. */
+export const goalStage = (_s: GoalState, _files: number): 1 | 2 | 3 => atGoalEntry() ? 1 : 3
 
 /** Splits a typed goal "<what> for <who> in <where>" into the three parts the profile reads. Free-form text is valid:
  *  parts that are not written fall back to neutral wording, and the whole text stays the What. */
