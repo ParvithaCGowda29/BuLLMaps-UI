@@ -32,7 +32,6 @@ import { Icon, Tip, fmtBytes } from './ui'
 import Orb from './reactbits/Orb'
 import bull from '../assets/login/bull-head-transparent.png'
 import { UploadMessages, fileCounts, useUploadRows } from '../steps/UploadPanes'
-import { GoalExpansion } from '../steps/GoalPanes'
 import { applyEdit, atGoalEntry, continueGoal, conversationChips, draftReply, getGoal, setGoal, useGoal, type Draft } from '../lib/goal.ts'
 
 
@@ -287,16 +286,12 @@ function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap:
     <ThreadPrimitive.Root className="as-thread">
       {/* Files dropped on the pane attach to the chat (questions only), like "+". */}
       <ComposerPrimitive.AttachmentDropzone className="as-dropzone">
-        {/* Upload with a goal on file, nothing said yet: the expanded draft in place of the greeting (29 Oct 2026).
-            No goal step (18 Nov 2026, per user): without a saved goal the regular greeting shows instead. */}
-        {empty && screenId === '1.1' && hasDraft && !atEntry ? <>
-          <div className="as-viewport"><GoalExpansion /></div>
+        {/* Goal sent, nothing else said yet: the pane stays empty with just the BuLL logo (18 Nov 2026, per user) -
+            no ISATVON draft in the chat. The draft still drives the output editor on the right. */}
+        {empty && hasDraft && !atEntry ? <div className="as-empty">
+          <img src={bull} alt="BuLL" className="as-bull" />
           {composer}
-        </> : empty && hasDraft && !atEntry ? <>
-          {/* Continuity (5 Nov 2026): the expanded goal stays at the top of the chat on every screen. */}
-          <div className="as-viewport"><GoalExpansion /></div>
-          {composer}
-        </> : empty ? <div className="as-empty">
+        </div> : empty ? <div className="as-empty">
           <IdleOrb />
           <h3 className="as-hello">How can I help you today?</h3>
           <p className="as-sub" role="status">{note}</p>
@@ -306,7 +301,6 @@ function ThreadBody({ snap, screenId, note, capture, files, chipDraft }: { snap:
           {/* One persistent list: stage updates are messages in it (never a replaced note). Only live progress
               (a Verify run in flight, uploads in flight) sits after the messages until it finishes. */}
           <ThreadPrimitive.Viewport className={`as-viewport${leaving ? ' as-fade-in' : ''}`}>
-            {hasDraft && !atEntry && <GoalExpansion />}
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage, EditComposer }} />
             {screenId === '2.3' && <QualityProgress />}
             {/* Scrolled up to read history: a cue back to the newest message (assistant-ui disables it at the bottom). */}

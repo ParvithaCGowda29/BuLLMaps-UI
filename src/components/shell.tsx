@@ -191,8 +191,10 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
   const collapsed = useUi(s => s.shell.nav) && drawer !== 'nav'
   const [open, setOpen] = useState<Set<string>>(() => new Set())
   const [query, setQuery] = useState('')
-  const toggleSkill = (id: string) => setOpen(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
-  const openSkill = (id: string) => { setQuery(''); setOpen(s => new Set(s).add(id)) }
+  // Opening a skill also selects it: the Outputs pane tracks its steps (18 Nov 2026, per user).
+  const toggleSkill = (id: string) => setOpen(s => { const n = new Set(s); if (n.has(id)) { n.delete(id) } else { n.add(id); setUi({ selectedSkill: id }) } return n })
+  const openAndSelect = (id: string) => setUi({ selectedSkill: id })
+  const openSkill = (id: string) => { setQuery(''); setOpen(s => new Set(s).add(id)); openAndSelect(id) }
   // The search card is hidden on Upload, so a query typed elsewhere does not filter the skills there.
   const q = current === '1.1' && snap ? '' : query.trim().toLowerCase()
   const subHits = (s: Skill) => (SUBSKILLS[s.id] ?? []).filter(p => p.label.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
@@ -239,7 +241,7 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
         </div>
         <ul className="nv-mini">{SKILLS.map(s => (
           <li key={s.id}><Tip text={s.label} note={s.role}>
-            <button className="nv-dot" onClick={() => { toggleRail(); setOpen(prev => new Set(prev).add(s.id)) }} aria-label={s.label}>
+            <button className="nv-dot" onClick={() => { toggleRail(); setOpen(prev => new Set(prev).add(s.id)); openAndSelect(s.id) }} aria-label={s.label}>
               <Icon name={s.icon} size={15} />
             </button>
           </Tip><span className="nv-mini-label" aria-hidden>{s.label}</span></li>

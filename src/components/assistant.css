@@ -9,6 +9,8 @@
 .assist .as-sub { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
 .assist .as-empty .as-msg { align-self: center; background: none; padding: 0; font-size: 12px; color: var(--muted); }
 .assist .as-empty .as-compose { width: 100%; margin-top: 8px; padding: 0; }
+/* Goal sent, pane otherwise empty: just the BuLL logo, no generated content (18 Nov 2026, per user). */
+.assist .as-bull { width: 96px; height: auto; opacity: .9; }
 
 /* Composer: rounded field with + on the left, dictate and send / stop on the right, inside it. */
 .assist .as-compose { display: flex; flex-direction: column; gap: 8px; padding: 8px var(--pad) var(--pad); }

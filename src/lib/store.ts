@@ -26,6 +26,8 @@ export interface Ui {
   fileDetail?: string
   /** Skill selected in 3.3 Skills/code review. */
   reviewSkill?: string
+  /** BuLLMaps nav skill whose steps the Outputs pane tracks (18 Nov 2026, per user); defaults to Audit & Strategy. */
+  selectedSkill?: string
   /** FDE Intake Objectives & Scope Directives (typed or Windows Voice-to-Text). */
   fdeGoals?: string
   /** v3 shell: collapsed NAVIGATE and Enterprise Assistant panes (saved as `bam-shell-v2`). */

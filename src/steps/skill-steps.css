@@ -1,0 +1,28 @@
+/* Outputs pane skill step tracker (18 Nov 2026, per user's reference visual). Pending-only at rest: hollow
+   connected marks; the green done state (.sk-step.done) exists for when a run actually completes. */
+.sk-steps { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+.sk-skill { margin: 0; font-size: 14px; }
+
+.sk-sub { display: flex; flex-direction: column; gap: 8px; }
+.sk-sub-head { display: flex; align-items: baseline; gap: 8px; }
+.sk-sub-num { flex: none; }
+.sk-sub-name { margin: 0; font-size: 13px; flex: 1; min-width: 0; }
+.sk-gate { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--hover); border: 1px solid var(--border); }
+.sk-gate.is-gated { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+
+.sk-track { list-style: none; margin: 0; padding: 12px 14px; display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.sk-step { position: relative; display: flex; gap: 12px; padding: 6px 0; }
+.sk-step:not(:last-child)::before { content: ''; position: absolute; left: 8px; top: 22px; bottom: -7px;
+  width: 2px; border-radius: 1px; background: var(--border-strong); }
+.sk-mark { position: relative; z-index: 1; flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%;
+  border: 2px solid var(--border-strong); background: var(--surface); display: grid; place-items: center; color: #fff; }
+.sk-step.done .sk-mark { background: var(--ok); border-color: var(--ok); }
+.sk-step.done:not(:last-child)::before { background: var(--ok); }
+.sk-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sk-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+.sk-step-gate { display: inline-flex; color: var(--faint); }
+.sk-step-gate:hover { color: var(--muted); }
+.sk-out { line-height: 1.45; }
+.sk-out-shared { margin: -2px 0 0 14px; }
