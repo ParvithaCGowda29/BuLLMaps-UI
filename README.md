@@ -1,19 +1,6 @@
-# BAM UI (BuLLM BAM Workbench)
+# BuLLMaps UI
 
-The front end for BuLLM's BAM pipeline: from discovery document to deployed skill, in one pipeline. A Forward Deployed Engineer (FDE) signs in, names the agent's goal, and the app walks the build through four tracked stages with human approval gates at every step that matters.
-
-## What it does
-
-The workbench is a guided, four-stage flow. Each stage is a set of screens; the tracker records what is done, in progress, or not started, and nothing moves forward without its gate.
-
-1. **Ingestion** - Upload the source documents, standardize and classify each file (the original is always kept), parse text, tables and structure, then review and confirm what goes to Context. Virus scan and quarantine run as internal gates in the background.
-2. **Context** - Sync Admin Masters, index the context graph, review the generated schemas, verify the context by asking questions, and confirm graph, schema and retrieval readiness with provenance.
-3. **Workbench** - Review and approve the Scope (SOW), the Agent > Skill grid with all seven ISATVON fields, the manifest template linked to the approved Scope and Grid, and the translated skill code with its translation check.
-4. **Validation** - Create and run the isolated sandbox, check the results and evidence, certify the checked artifact, then commit it to BAM_db and deploy to Staging.
-
-Outside the pipeline, **Admin > Masters** holds the master data grids (agents, assistants and the other masters) that feed Context sync.
-
-Engine orchestration is selectable from the login screen and in engine settings; evaluation runs on the calibrated System-1 engine in the browser.
+The front end for BuLLMaps, the voice-first marketing workspace. A marketer signs in and talks to the Router (the middle-pane chat) in plain words; the Router plans the work across ten execution skills, and the right-hand Outputs pane shows every sub-skill's steps, its expected output, and its run status as the work proceeds. Nothing goes live without the client's approval at the human-gated steps.
 
 ## Tech stack
 
@@ -27,13 +14,21 @@ React 19, TypeScript, Vite 8, Refine core, TanStack Query, AG Grid, xyflow (work
 ## Getting started
 
 ```bash
-git clone https://github.com/ParvithaCGowda29/BAM_UI.git
-cd BAM_UI
+git clone https://github.com/ParvithaCGowda29/BuLLMaps-UI.git
+cd BuLLMaps-UI
 npm install
 npm run dev
 ```
 
 The dev server runs on http://localhost:5188 (strict port; stop whatever else uses 5188). Sign in with any work email and a password of 8 or more characters: sign-in is a development mock. Production builds fail closed and refuse every sign-in.
+
+## Updating a local copy
+
+```bash
+git pull origin main
+npm install   # only needed when package.json changed
+npm run dev   # restart the dev server, then hard-refresh the browser
+```
 
 ## Scripts
 
@@ -42,13 +37,13 @@ The dev server runs on http://localhost:5188 (strict port; stop whatever else us
 | `npm run dev` | Start the Vite dev server on port 5188 |
 | `npm run build` | Type-check (`tsc --noEmit`) and build for production into `dist/` |
 | `npm run preview` | Serve the production build locally on port 5188 |
-| `npm test` | Run the unit tests (tracker, evidence, RAG pipeline, SOW diff, scan gate, standardize, goal, judge) |
+| `npm test` | Run the unit tests (tracker, evidence, RAG pipeline, SOW diff, scan gate, standardize, goal, router, pane layout) |
 | `npm run check` | Validate the mock API adapter |
 | `npm run storybook` | Start Storybook on port 6006 |
 | `npm run build-storybook` | Build the static Storybook |
 
 ## Backends
 
-None. The app is front-end only and runs end to end on built-in mocks: ingestion, the context pipeline, SOW generation and evaluation, and validation all execute in the browser with calibrated local engines. An OpenRouter key entered in engine settings is stored in the browser only.
+None yet. The app is front-end only and runs end to end on built-in mocks: the Router conversation, skill workflows and the Outputs pane all execute in the browser. An OpenRouter key entered in engine settings is stored in the browser only.
 
 One environment variable: `VITE_APP_TIMEZONE` pins the display timezone (default: the viewer's).
