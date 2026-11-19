@@ -19,6 +19,7 @@ import { ActionBarPrimitive, AssistantRuntimeProvider, AttachmentPrimitive, AuiI
 import { createDictation, fmtClock, stopDictation, useDictate } from './dictation'
 import type { Snapshot } from '../api/types'
 import { CONFIRM_OBJECTIVE, attachmentReply, chipReply, intentOf, objectiveReply, reply, type AssistantFacts } from '../lib/assistant.ts'
+import { markFromText, routerReply, type RouterMark, type RouterMsg } from '../lib/router.ts'
 import { prerequisite } from '../lib/prereq'
 import { activeScreen } from '../lib/route'
 import { getUi, setUi, uppy, useUi } from '../lib/store'
@@ -118,6 +119,23 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
         return { content: [{ type: 'text', text: objectiveReply(f) }] }
       }
       if (asked) setPending(null)
+      // Suggestion chips are questions: answered, never saved as the objective.
+      const canned = chipReply(text, f)
+      if (canned) return { content: [{ type: 'text', text: canned }] }
+      // Router / Concierge (19 Nov 2026, per user): while no rail skill is picked the chat IS the Router (skill 0),
+      // so a request runs the skill-0 conversation (structured request, brand context, clarifying questions, plan
+      // read-back, approve/edit/cancel, handoff + status) instead of the intake objective capture or the goal
+      // draft. A rail pick always wins and restores the screen flows below. Workflow questions the Router does not
+      // handle fall through to `reply`.
+      if (last?.role === 'user' && (() => { const s = getUi().selectedSkill; return !s || s === '0' })()) {
+        const history: RouterMsg[] = messages.map(m => {
+          const mtext = m.content.map(p => (p.type === 'text' ? p.text : '')).join(' ')
+          const mark = (m.metadata?.custom as { router?: RouterMark } | undefined)?.router ?? (m.role === 'assistant' ? markFromText(mtext) : undefined)
+          return { role: m.role, text: mtext, mark }
+        })
+        const r = routerReply(history, text, { files: f.snap.uploads.map(u => u.name) })
+        if (r) return { content: [{ type: 'text', text: r.text }], metadata: { custom: { router: r.mark } } }
+      }
       // Upload's goal draft (29 Oct 2026): edits apply to the draft on the right (it updates at once); questions about
       // it are answered from it.
       const g = getGoal()
@@ -128,9 +146,6 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
         const r = draftReply(g.draft, text, names)
         if (r) return { content: [{ type: 'text', text: r }] }
       }
-      // Suggestion chips are questions: answered, never saved as the objective.
-      const canned = chipReply(text, f)
-      if (canned) return { content: [{ type: 'text', text: canned }] }
       // The objective is captured through the composer and stored as before (fdeGoals, read by SOW generation). A
       // question is answered instead; an ambiguous message is confirmed first.
       const intent = f.intake?.capture ? intentOf(text) : 'question'

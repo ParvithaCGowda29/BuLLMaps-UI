@@ -8,6 +8,7 @@ import { activeScreen, aliasOf, goScreen, navigate, usePath } from './lib/route'
 import { NavRail, TopBar } from './components/shell'
 import { PaneLayout, PaneGrip, paneHeaderProps } from './components/PaneLayout'
 import { AssistantPane } from './components/AssistantPane'
+import { UploadIdle } from './steps/UploadIdle'
 import { AutoChip, Banner, Confirm, Empty, ErrorState, HitlChip, Icon, PanesContext, Skeleton } from './components/ui'
 import * as Step1 from './steps/Step1'
 import * as Step2 from './steps/Step2'
@@ -162,7 +163,7 @@ function Workbench() {
     if (screen || global) return
     const alias = aliasOf(path)
     if (alias) navigate(alias + location.search, { replace: true })
-    else if (snap) navigate(SCREEN_ROUTES[activeScreen(snap)]!.path, { replace: true })
+    else if (snap) navigate(SCREEN_ROUTES['1.1'].path, { replace: true }) // BuLLMaps home is Upload (19 Nov 2026, per user)
   }, [snap, screen, global, path])
 
   if (!snap || (!screen && !global) || screen?.item.internal) return (
@@ -183,6 +184,10 @@ function Workbench() {
   const locked = info?.state === 'locked' && !templateReady ? (prerequisite(snap, rag, info.id)?.reason ?? `${info.reason}.`) : undefined
   let body
   if (global) body = <MastersPage />
+  // BuLLMaps (19 Nov 2026, per user): the right pane is the BuLLMaps Outputs pane on every screen - the RFQ screen
+  // bodies (Verify / context testing, SOW, Grid, Validation, locked states) no longer render anywhere. Upload
+  // ('1.1') keeps its own view so + Add files and the upload flow work unchanged.
+  else if (screen!.id !== '1.1') body = <PanesContext.Provider value><main className="panes" data-single=""><UploadIdle /></main></PanesContext.Provider>
   else if (!info) {
     const View = VIEWS[screen!.id]
     body = <><ContextBar snap={snap} screenId={screen!.id} /><PanesContext.Provider value><View snap={snap} path={path} /></PanesContext.Provider></>
@@ -207,7 +212,7 @@ function Workbench() {
   const title = global ? 'Masters' : screenLabel(screen!.id)
   const hint = global ? 'Admin' : screen!.item.description
   // One primary action, pinned below the body; a footer that renders nothing (Review while waiting) draws no bar.
-  const foot = screen && FOOT[screen.id] && (info?.state !== 'locked' || templateReady) ? FOOT[screen.id]({ snap, info }) : null
+  const foot = screen?.id === '1.1' && FOOT[screen.id] && (info?.state !== 'locked' || templateReady) ? FOOT[screen.id]({ snap, info }) : null
   // Back goes to the previous screen in the rail order; hidden detail views go back to the screen they belong to.
   const prev = !screen || global ? undefined
     : screen.item.hidden && screen.item.navAs ? NAV_ORDER.find(s => s.id === screen.item.navAs)
@@ -226,8 +231,7 @@ function Workbench() {
           <header {...paneHeaderProps} className="shell-head ws-head">
             {screen?.id === '1.1'
               ? <UploadHead snap={snap} />
-              : <>{prev && <button className="icon-btn sm ws-back" onClick={() => goScreen(prev.id, true)} title={`Back to ${prev.label}`} aria-label={`Back to ${prev.label}`}><Icon name="back" size={14} /></button>}<h2 id="ws-title" tabIndex={-1}><Icon name="table" size={13} /><span className="ws-kicker">Results &amp; edits</span><span className="ws-title">{title}</span></h2><PaneGrip pane="workspace" />{screen?.item.mode === 'automated' && <AutoChip className="ws-auto" />}{screen?.item.mode === 'hitl' && <HitlChip className="ws-auto" />}
-                <span className="ws-hint" title={hint}>{hint}</span></>}
+              : <><h2 id="ws-title" tabIndex={-1}><span className="ws-title">Outputs</span></h2><PaneGrip pane="workspace" /></>}
           </header>
           <div className="ws-body" ref={wsBody}>{body}</div>
           {/* One primary action, pinned below the scrolling body (never scrolled to). */}
