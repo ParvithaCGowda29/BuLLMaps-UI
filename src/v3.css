@@ -398,3 +398,12 @@ html[data-upload-stage="2"] .shell[data-screen="1.1"] .workspace dialog { visibi
 .pane-hint-ok { padding: 5px 14px; border: 0; border-radius: 99px; background: #fff; color: var(--bl-blue); font-weight: 700; font-size: 12px; cursor: pointer; }
 .pane-hint-later { padding: 5px 0; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .pane-hint-later:hover { color: #fff; }
+
+/* Run history topbar menu (19 Nov 2026, per user). */
+.runs-menu { min-width: 280px; }
+.runs-empty { margin: 0; padding: 8px 10px 10px; }
+.runs-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12px; }
+.runs-skill { font-weight: 600; }
+.runs-status { margin-left: auto; font-weight: 600; }
+.runs-status.is-pass { color: var(--ok); }
+.runs-status.is-fail { color: var(--err); }

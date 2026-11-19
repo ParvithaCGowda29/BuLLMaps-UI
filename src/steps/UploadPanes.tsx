@@ -17,6 +17,9 @@ import { fdeView } from './IngestionFlow'
 import { UploadIdle } from './UploadIdle'
 import { addFilesLocked, canAddFiles, resetGoal, useGoal } from '../lib/goal.ts'
 import { useReviewFiles } from './Standardize'
+// (19 Nov 2026, per user): the upload panes' styles live in goal.css, which was bundled via GoalPanes' import;
+// once the goal panes left the tree the styles dropped out and the after-upload view lost its cards and table.
+import './goal.css'
 
 // ---- entry points --------------------------------------------------------------------------------------------
 type Pick = (files: ArrayLike<File>, source: 'files' | 'folder' | 'zip' | 'drop') => void

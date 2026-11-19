@@ -8,36 +8,25 @@ import './skill-steps.css'
 import { Icon } from '../components/ui'
 import { useUi } from '../lib/store'
 import { SKILL_STEPS, SKILL_NAMES, type SubSkillInfo } from '../lib/bullmapsSteps'
-import { useRuns, type PastRun } from './runHistory'
+import bull from '../assets/login/bull-head-transparent.png'
 
 export function SkillSteps() {
   const selected = useUi(s => s.selectedSkill)
-  const runs = useRuns(selected)
-  // Nothing picked yet: the pane stays empty (19 Nov 2026, per user).
-  if (!selected) return <div className="sk-steps" aria-label="Outputs" />
+  // Nothing picked yet (19 Nov 2026, per user): no output content, just an animated waiting-for-input widget.
+  if (!selected) return (
+    <div className="sk-steps sk-wait" aria-label="Outputs">
+      <img src={bull} alt="" className="sk-wait-bull" />
+      <p className="sk-wait-text">Waiting for your input<span className="sk-dots" aria-hidden><span>.</span><span>.</span><span>.</span></span></p>
+      <p className="muted xs">Pick a skill or sub-skill on the left to see its output here.</p>
+    </div>
+  )
   const [skillId, subN] = selected.split('.')
   const subs = (SKILL_STEPS[skillId] ?? []).filter(sub => !subN || sub.n === selected)
   return (
     <div className="sk-steps">
       <h3 className="sk-skill">{SKILL_NAMES[skillId] ?? 'Skill'}</h3>
       {subs.map(sub => <SubSkillBlock key={sub.n} sub={sub} />)}
-      <RunHistory runs={runs} />
     </div>
-  )
-}
-
-/** BAM-style run history: finished runs of the picked skill or sub-skill, newest first. */
-function RunHistory({ runs }: { runs: PastRun[] }) {
-  return (
-    <details className="accordion sk-history">
-      <summary><Icon name="clock" size={12} />Run history<span className="muted xs">{runs.length ? `${runs.length} run${runs.length === 1 ? '' : 's'}` : 'No finished runs yet'}</span></summary>
-      <ul className="run-history">{runs.map(h => (
-        <li key={h.key}>
-          <span className="xs">{h.skill}</span>
-          <time className="muted xs" dateTime={h.endedAt}>{new Date(h.endedAt).toLocaleString()}</time>
-          <span className={`sk-run-status ${h.status === 'succeeded' ? 'is-pass' : 'is-fail'}`}>{h.status === 'succeeded' ? 'Passed' : 'Failed'}</span>
-        </li>))}</ul>
-    </details>
   )
 }
 

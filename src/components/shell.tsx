@@ -8,6 +8,7 @@ import { GLOBAL_ROUTES, globalByPath, screenByPath, screenLabel, stageOf } from 
 import { signOut, switchToMasters, useSession } from '../features/login/session'
 import { Icon, Tip, fmtFull, fmtTime } from './ui'
 import { AppSettingsModal } from './AppSettingsModal'
+import { useRuns } from '../steps/runHistory'
 import { BrandLockup } from './BrandLockup'
 import { UploadFilesBlock } from '../steps/UploadPanes'
 
@@ -38,6 +39,8 @@ export function TopBar({ syncedAt, offline }: { snap?: Snapshot; syncedAt: numbe
         </nav>
       </div>
       <div className="topbar-right">
+        {/* Run history (19 Nov 2026, per user): the finished-runs record lives in the topbar, RFQ/BAM style. */}
+        <RunHistoryMenu />
         <span className={`sync ${offline ? 'tone-err' : 'tone-muted'}`} role="status" title={syncedAt ? `Last backend sync ${fmtFull(new Date(syncedAt).toISOString())}` : undefined}>
           <Icon name={offline ? 'alert' : 'db'} size={12} />
           <span className="sync-text">{offline ? `Backend unreachable. Status unknown since ${syncedAt ? fmtTime(new Date(syncedAt).toISOString()) : 'start'}` : `All changes saved · ${syncedAt ? fmtTime(new Date(syncedAt).toISOString()) : '—'}`}</span>
@@ -77,6 +80,39 @@ function ProfileMenu() {
         <p className="profile-who"><span className="muted xs">Signed in as</span><strong>{email ?? '—'}</strong></p>
         <button className="profile-item" onClick={() => { setOpen(false); switchToMasters() }}><Icon name="db" size={14} />Switch to Masters</button>
         <button className="profile-item" onClick={() => { setOpen(false); signOut() }}><Icon name="logout" size={14} />Sign out</button>
+      </div>
+    </div>
+  )
+}
+
+// Run history (19 Nov 2026, per user): a topbar clock menu listing finished runs, newest first, from the
+// localStorage record (runHistory.ts). Click or keyboard opens it; Escape or an outside click closes it.
+function RunHistoryMenu() {
+  const runs = useRuns()
+  const [open, setOpen] = useState(false)
+  const wrap = useRef<HTMLDivElement>(null)
+  const btn = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const outside = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('pointerdown', outside)
+    return () => document.removeEventListener('pointerdown', outside)
+  }, [open])
+  const close = () => { setOpen(false); btn.current?.focus() }
+  return (
+    <div className="profile" ref={wrap} onKeyDown={e => { if (e.key === 'Escape' && open) close() }}>
+      <button ref={btn} className="icon-btn" aria-expanded={open} aria-controls="run-history-menu" aria-label="Run history" title="Run history" onClick={() => setOpen(o => !o)}>
+        <Icon name="clock" />
+      </button>
+      <div id="run-history-menu" className="profile-menu runs-menu" hidden={!open}>
+        <p className="profile-who"><span className="muted xs">Run history</span></p>
+        {runs.length === 0 && <p className="runs-empty muted xs">No finished runs yet. A run is recorded here when one finishes.</p>}
+        {runs.map(h => (
+          <div key={h.key} className="runs-row">
+            <span className="runs-skill">{h.skill}</span>
+            <time className="muted xs" dateTime={h.endedAt}>{new Date(h.endedAt).toLocaleString()}</time>
+            <span className={`runs-status ${h.status === 'succeeded' ? 'is-pass' : 'is-fail'}`}>{h.status === 'succeeded' ? 'Passed' : 'Failed'}</span>
+          </div>))}
       </div>
     </div>
   )

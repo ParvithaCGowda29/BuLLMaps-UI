@@ -1,4 +1,5 @@
 import { Hairline, PaneGrip, paneHeaderProps } from './PaneLayout'
+import { loadThread, saveThread, threads } from './chatStore'
 // Enterprise Assistant (middle pane), built on assistant-ui primitives with a local runtime. The thread lives for the
 // whole session and is never keyed by screen, so navigating keeps the conversation. Declutter (14 Oct 2026): the pane
 // is only the thread and the composer (input, Dictate, send). The chat holds no unprompted status notes
@@ -53,18 +54,6 @@ const ConfirmCtx = createContext<string | null>(null)
 // project's thread is swapped in and out of the runtime (`threads`). History lives in memory for the session only;
 // persist `runtime.thread.export()` per project here when a conversation API exists.
 const projectOf = (_snap: Snapshot) => 'default'
-const THREAD_KEY = (project: string) => `bam-chat-thread:${project}`
-/** Text-only copy of the thread (attachments hold File objects and are not saved). */
-function saveThread(project: string, exp: ExportedMessageRepository) {
-  try {
-    const messages = exp.messages.map(m => ({ ...m, message: { ...m.message, attachments: [] } }))
-    sessionStorage.setItem(THREAD_KEY(project), JSON.stringify({ ...exp, messages }))
-  } catch { /* storage blocked or full: the in-memory copy still holds */ }
-}
-function loadThread(project: string): ExportedMessageRepository | null {
-  try { const raw = sessionStorage.getItem(THREAD_KEY(project)); return raw ? JSON.parse(raw, (k, v) => (k === 'createdAt' && typeof v === 'string' ? new Date(v) : v)) as ExportedMessageRepository : null } catch { return null }
-}
-const threads = new Map<string, ExportedMessageRepository>()
 /** Per project: stage events already in its thread (screen updates, Verify run results, upload summaries). */
 /** Per project: upload record ids already acknowledged with "Files added." (see the effect in AssistantPane). */
 const ackedIds = new Map<string, Set<string>>()
