@@ -21,7 +21,7 @@ import type { Snapshot } from '../api/types'
 import { CONFIRM_OBJECTIVE, attachmentReply, chipReply, intentOf, objectiveReply, reply, type AssistantFacts } from '../lib/assistant.ts'
 import { prerequisite } from '../lib/prereq'
 import { activeScreen } from '../lib/route'
-import { setUi, uppy, useUi } from '../lib/store'
+import { getUi, setUi, uppy, useUi } from '../lib/store'
 import { useRag } from '../rag/ragPipeline.ts'
 import { STATUS_LABEL, TASKS, countedOf, doneCount, screenLabel, stageOf, taskStatus } from '../tracker/trackerConfig.ts'
 import { useStatuses } from '../tracker/useTrackerStore'
@@ -103,6 +103,9 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
       const last = messages[messages.length - 1]
       const text = (last?.content.map(p => (p.type === 'text' ? p.text : '')).join(' ') ?? '').trim()
       const f = latest.current
+      // Router / Concierge (19 Nov 2026, per user): a chat message is the Router's intake, so the Outputs pane shows
+      // its progress + output design until a rail skill is picked (a rail pick always wins).
+      if (last?.role === 'user' && !getUi().selectedSkill) setUi({ selectedSkill: '0' })
       // Chat attachments are for questions only (never ingested); no model reads them yet, so say so.
       const files = last?.role === 'user' ? last.attachments.map(a => a.name) : []
       if (files.length) return { content: [{ type: 'text', text: attachmentReply(files) }] }

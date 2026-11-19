@@ -8,11 +8,37 @@ export interface SubSkillInfo { n: string; name: string; steps: StepInfo[] }
 
 /** Skill names in nav order (the sheet's Skill column). */
 export const SKILL_NAMES: Record<string, string> = {
+  '0': 'Router / Concierge',
   '1': 'Audit & Strategy', '2': 'Website', '3': 'SEO (Organic, Local & AEO/GEO)', '4': 'Content & Creatives',
   '5': 'Paid Ads', '6': 'Social Media', '7': 'Brand', '8': 'MQL', '9': 'CRM', '10': 'Reports & Publishing',
 }
 
 export const SKILL_STEPS: Record<string, SubSkillInfo[]> = {
+  // Skill 0 (Router / Concierge, 19 Nov 2026, per user): the intake in the middle-pane chat; its Outputs pane uses
+  // the RFQ-style progress + output design (SkillSteps.tsx), not the step tracker. Steps, outputs and the approval
+  // gate per step are her adopted Agent Workflow tab.
+  '0': [
+    { n: '0.1', name: 'Research, Extract, Audit & Analyze', steps: [
+      { n: '0.1.1', name: 'Read voice/text request and identify intent and task(s)', gated: false, output: 'Structured request with task(s), language and intent' },
+      { n: '0.1.2', name: 'Retrieve brand profile and relevant previous-cycle feedback', gated: false, output: 'Relevant brand context and feedback linked to request' },
+      { n: '0.1.3', name: 'Collect missing business basics and clarify gaps', gated: false, output: 'Clarifying question and updated brief' },
+    ] },
+    { n: '0.2', name: 'Recommend, Strategize, Plan & Client Review', steps: [
+      { n: '0.2.1', name: 'Select relevant skill(s) and map the task sequence', gated: false, output: 'Selected skill IDs and proposed task sequence' },
+      { n: '0.2.2', name: 'Read back scope, expected output, audience and any budget', gated: false, output: 'Read-back awaiting client decision' },
+      { n: '0.2.3', name: 'Record client approval, edit or cancel before proceeding', gated: true, output: 'Recorded approve/edit/cancel decision linked to plan' },
+    ] },
+    { n: '0.3', name: 'Create, Fix, Optimize & Schedule', steps: [
+      { n: '0.3.1', name: 'Hand approved brief and brand context to selected skill(s)', gated: true, output: 'Versioned draft brief handed to selected skills' },
+      { n: '0.3.2', name: 'Track task status and collect draft outputs / proposed schedules', gated: false, output: 'Current status with drafts, blockers and proposed times' },
+      { n: '0.3.3', name: 'Prepare draft handoff for review; route gaps or changes back', gated: false, output: 'Review package or explicit routed revision request' },
+    ] },
+    { n: '0.4', name: 'Upload, Publish, Monitor & Report', steps: [
+      { n: '0.4.1', name: 'Collect internal review and client approve / edit / cancel', gated: true, output: 'Recorded client approve/edit/cancel; rejected draft routed back' },
+      { n: '0.4.2', name: 'Pass only approved live actions to relevant skill(s); verify result', gated: true, output: 'Verified result or explicit failure/unknown outcome' },
+      { n: '0.4.3', name: 'Report completion or blockers and feed results into next intake', gated: false, output: 'Completion/blocker report and next-cycle feedback' },
+    ] },
+  ],
   '1': [
     { n: '1.1', name: 'Search, Competitor & Lead Audits', steps: [
       { n: '1.1.1', name: 'Audit', gated: false, output: 'sourced findings / structured research record (no live changes)' },

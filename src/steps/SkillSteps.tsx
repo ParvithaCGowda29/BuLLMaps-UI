@@ -22,11 +22,50 @@ export function SkillSteps() {
   )
   const [skillId, subN] = selected.split('.')
   const subs = (SKILL_STEPS[skillId] ?? []).filter(sub => !subN || sub.n === selected)
+  // Skill 0 (Router / Concierge, 19 Nov 2026, per user): the RFQ-style design - a green-tick progress checklist,
+  // then the output card with the sub-skill's outputs visible inline. No numbering, no gating chip (gating lives
+  // in the left pane only), nothing to export.
+  if (skillId === '0') return (
+    <div className="sk-steps">
+      <h3 className="sk-skill">{SKILL_NAMES[skillId]}</h3>
+      {subs.map(sub => <RouterSubBlock key={sub.n} sub={sub} />)}
+    </div>
+  )
   return (
     <div className="sk-steps">
       <h3 className="sk-skill">{SKILL_NAMES[skillId] ?? 'Skill'}</h3>
       {subs.map(sub => <SubSkillBlock key={sub.n} sub={sub} />)}
     </div>
+  )
+}
+
+function RouterSubBlock({ sub }: { sub: SubSkillInfo }) {
+  return (
+    <section className="sk-sub sk-router" aria-label={sub.name}>
+      <header className="sk-sub-head">
+        <h4 className="sk-sub-name">{sub.name}</h4>
+      </header>
+      <ol className="sk-track">
+        {sub.steps.map(st => (
+          <li key={st.n} className="sk-step done">
+            <span className="sk-mark" aria-hidden><Icon name="check" size={11} /></span>
+            <span className="sk-body">
+              <span className="sk-label">{st.name}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+      <div className="sk-result" role="status">
+        <p className="sk-result-head">
+          <span className="sk-result-check" aria-hidden><Icon name="check" size={11} /></span>
+          <strong>{sub.name} completed successfully.</strong>
+        </p>
+        <p className="sk-result-sub muted xs">Your outputs are ready.</p>
+        <ul className="sk-result-list">
+          {sub.steps.map(st => <li key={st.n}>{st.output}</li>)}
+        </ul>
+      </div>
+    </section>
   )
 }
 

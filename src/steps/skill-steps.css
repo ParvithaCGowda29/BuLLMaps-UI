@@ -46,3 +46,17 @@
 .sk-dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes sk-dot { 0%, 100% { opacity: .25 } 50% { opacity: 1 } }
 @media (prefers-reduced-motion: reduce) { .sk-wait-bull, .sk-dots span { animation: none; opacity: 1; } }
+
+/* Skill 0 Router / Concierge (19 Nov 2026, per user): RFQ-style output card under the green-tick checklist -
+   the sub-skill's outputs visible inline in the pane, nothing to export. */
+.sk-result { margin-top: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.sk-result-head { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.sk-result-check { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--ok); color: #fff; }
+.sk-result-sub { margin: 0 0 0 26px; }
+.sk-result-list { margin: 2px 0 0 26px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px;
+  font-size: 12px; line-height: 1.45; }
+.sk-result-list li { position: relative; padding-left: 14px; }
+.sk-result-list li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--ok); }
