@@ -42,25 +42,7 @@ export function TopBar({ syncedAt, offline }: { snap?: Snapshot; syncedAt: numbe
           <Icon name={offline ? 'alert' : 'db'} size={12} />
           <span className="sync-text">{offline ? `Backend unreachable. Status unknown since ${syncedAt ? fmtTime(new Date(syncedAt).toISOString()) : 'start'}` : `All changes saved · ${syncedAt ? fmtTime(new Date(syncedAt).toISOString()) : '—'}`}</span>
         </span>
-        {/* Glass mode switch: native radios (Staging = left half, FDE = right half); the sphere sits over the inactive half. */}
-        <fieldset className="env-glass" data-env={env} aria-describedby="env-hint" title="View context, not a deploy">
-          <legend className="sr-only">Environment mode</legend>
-          <span className="eg-track" aria-hidden />
-          <span className="eg-sphere" aria-hidden>
-            <span className="eg-ghost">{env === 'FDE' ? 'Staging' : 'FDE'}</span>
-            {env === 'FDE'
-              ? <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5M9 3 7 13" /></svg>
-              : <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8 1.8 14.5 5 8 8.2 1.5 5z" /><path d="m3.2 7.6 4.8 2.4 4.8-2.4 1.7.85L8 11.6 1.5 8.45z" opacity=".85" /><path d="m3.2 10.6 4.8 2.4 4.8-2.4 1.7.85L8 14.6 1.5 11.45z" opacity=".7" /></svg>}
-          </span>
-          <span className="eg-text" aria-hidden>{env}</span>
-          {(['Staging', 'FDE'] as const).map(e => (
-            <label key={e} className={`eg-opt eg-${e.toLowerCase()} ${env === e ? 'on' : ''}`}>
-              <input type="radio" name="env" value={e} checked={env === e} aria-label={e}
-                onChange={() => setUi({ env: e })} />
-            </label>
-          ))}
-        </fieldset>
-        <span id="env-hint" className="sr-only">View context, not a deploy</span>
+        {/* The Staging/FDE glass switch is removed (19 Nov 2026, per user); the topbar keeps sync, theme and profile. */}
         <button className="icon-btn" aria-pressed={theme === 'light'} onClick={() => setUi({ theme: theme === 'dark' ? 'light' : 'dark' })}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
@@ -203,8 +185,10 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
   const toggleRail = () => setUi(s => ({ shell: { ...s.shell, nav: !s.shell.nav } }))
   const onUpload = current === '1.1'
   const navSpot = usePaneSpot('nav')
+  const selected = useUi(s => s.selectedSkill)
 
-  // One skill group: the skill row folds open to its four sub-skills (inert until the skill screens exist).
+  // One skill group: the skill row folds open to its four sub-skills; clicking one shows its output on the right
+  // (19 Nov 2026, per user: the Outputs pane tracks the picked skill or sub-skill, empty until one is picked).
   const skillGroup = (s: Skill) => {
     const isOpen = open.has(s.id)
     return (
@@ -218,10 +202,11 @@ export function NavRail({ snap }: { snap?: Snapshot }) {
         </button>
         <ul id={`nv-group-${s.id}`} className="nv-items" hidden={!isOpen}>
           {(SUBSKILLS[s.id] ?? []).map(p => (
-            <li key={p.n}><span className="nv-item nv-static" title={p.description}>
+            <li key={p.n}><button className={`nv-item nv-static nv-pick${selected === `${s.id}.${p.n}` ? ' on' : ''}`} title={p.description}
+              onClick={() => setUi({ selectedSkill: `${s.id}.${p.n}` })}>
               <span className="nv-sub-num muted xs" aria-hidden>{s.id}.{p.n}</span>
               <span className="nv-label">{p.label}</span>
-            </span></li>
+            </button></li>
           ))}
         </ul>
       </li>

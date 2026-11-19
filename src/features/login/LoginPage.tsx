@@ -75,6 +75,12 @@ function SignInForm() {
     }
     setStatus('ok')
     setTimeout(() => {
+      // Fresh workspace on every login (19 Nov 2026, per user): the middle pane starts empty - no conversation
+      // or draft carries over from a previous session.
+      try {
+        for (const k of Object.keys(sessionStorage)) if (k.startsWith('bam-chat-thread:')) sessionStorage.removeItem(k)
+        localStorage.removeItem('bam-goal-v2')
+      } catch { /* storage blocked */ }
       const target = safeNext(new URLSearchParams(location.search).get('next'))
       startSession(res.email, keep)
       navigate(target, { replace: true })

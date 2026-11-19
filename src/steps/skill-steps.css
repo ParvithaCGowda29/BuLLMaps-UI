@@ -26,3 +26,12 @@
 .sk-step-gate:hover { color: var(--muted); }
 .sk-out { line-height: 1.45; }
 .sk-out-shared { margin: -2px 0 0 14px; }
+
+/* Run history (19 Nov 2026, BAM pattern): finished runs of the picked skill or sub-skill. */
+.sk-history { margin-top: 14px; }
+.sk-history summary { font-size: 13px; }
+.run-history { list-style: none; margin: 6px 0 0; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.run-history li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sk-run-status { font-weight: 600; }
+.sk-run-status.is-pass { color: var(--st-done, #157f3d); }
+.sk-run-status.is-fail { color: var(--err); }
