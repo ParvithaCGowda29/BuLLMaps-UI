@@ -63,3 +63,38 @@ test('router: audits route to skill 1, ads to skill 5', () => {
   assert.deepEqual(skillsFor(parseRequest('Audit my marketing'), 'Audit my marketing').map(s => s.id), ['1'])
   assert.ok(skillsFor(parseRequest('Run two LinkedIn ads for the Winter Home Makeover offer'), 'Run two LinkedIn ads for the Winter Home Makeover offer').some(s => s.id === '5'))
 })
+
+test('router: numbered + quoted commands parse as the request itself (her pasted demo commands)', () => {
+  const r1 = routerReply([], '1. "Make a LinkedIn post for our Winter Home Makeover offer using the brand profile I uploaded."', CTX)!
+  assert.equal(r1.mark, 'intake')
+  assert.match(r1.text, /create 1 LinkedIn post/)
+  assert.match(r1.text, /intent: promote the Winter Home Makeover\./)
+  const r2 = routerReply([], '2. "Plan three posts for the Winter Home Makeover offer using last campaign\'s feedback, and ask me anything you\'re missing before you start."', CTX)!
+  assert.equal(r2.mark, 'intake')
+  assert.match(r2.text, /plan 3 posts/)
+})
+
+test('router: a fresh request mid-conversation (after a decision) starts a new intake', () => {
+  const h: RouterMsg[] = [
+    turn('user', 'Make a LinkedIn post for our Winter Home Makeover offer'), turn('assistant', '...', 'intake'),
+    turn('user', 'you decide'), turn('assistant', '...', 'plan'),
+    turn('user', 'approve'), turn('assistant', '...', 'approved')]
+  const r = routerReply(h, 'Plan three posts for the Winter Home Makeover offer using last campaign\'s feedback', CTX)!
+  assert.equal(r.mark, 'intake')
+  assert.match(r.text, /plan 3 posts/)
+})
+
+test('router: re-sending the request after the intake reply restarts its intake (not mistaken for answers)', () => {
+  const h: RouterMsg[] = [turn('user', 'Make a LinkedIn post for our Winter Home Makeover offer'), turn('assistant', '...', 'intake')]
+  const r = routerReply(h, 'Make a LinkedIn post for our Winter Home Makeover offer', CTX)!
+  assert.equal(r.mark, 'intake')
+})
+
+test('router: command 2 mid-plan is a fresh intake, not a plan refinement', () => {
+  const h: RouterMsg[] = [
+    turn('user', 'Make a LinkedIn post for our Winter Home Makeover offer'), turn('assistant', '...', 'intake'),
+    turn('user', 'you decide'), turn('assistant', '...', 'plan')]
+  const r = routerReply(h, 'Plan three posts for the Winter Home Makeover offer using last campaign\'s feedback', CTX)!
+  assert.equal(r.mark, 'intake')
+  assert.match(r.text, /plan 3 posts/)
+})

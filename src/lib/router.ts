@@ -23,6 +23,15 @@ export function markFromText(text: string): RouterMark | undefined {
   if (/^Current status \(0\.3\.2\)/.test(text)) return 'status'
 }
 
+/** Commands are often pasted numbered and quoted ("2. \"Plan three posts...\""): strip the enumeration and the
+ *  wrapping quotes so the request itself is parsed (19 Nov 2026 - her live demo pasted them exactly like that). */
+export function normalizeCommand(text: string): string {
+  let t = text.trim().replace(/^\d+\s*[.)]\s*/, '')
+  const q = t.match(/^([“"'])(.*)([”"'])$/)
+  if (q) t = q[2].trim()
+  return t
+}
+
 const NUM: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 }
 const CHANNELS = ['linkedin', 'instagram', 'facebook', 'whatsapp', 'youtube', 'twitter'] as const
 const CHANNEL_NAME: Record<string, string> = { linkedin: 'LinkedIn', instagram: 'Instagram', facebook: 'Facebook', whatsapp: 'WhatsApp', youtube: 'YouTube', twitter: 'Twitter', x: 'X' }
@@ -108,6 +117,12 @@ function planReply(requestText: string, answers: string, ctx: RouterCtx): Router
 const APPROVE = /^(approve|approved|yes|ok|okay|go ahead|looks good|proceed|lgtm)\b/i
 const CANCEL = /^cancel/i
 const EDIT = /^(edit|change|modify|adjust)\b/i
+/** A fresh request can arrive while the Router is awaiting answers or a decision (19 Nov 2026 - her demo sent the
+ *  second sample command mid-flow): a request verb plus a content kind, channel or offer/campaign word means new
+ *  intake, not an answer or refinement. Answers ("local buyers, organic only, 1 December") match neither. */
+const REQUEST_VERB = /\b(make|create|write|draft|plan|schedule|audit|analy[sz]e|fix|improve|optimi[sz]e|run|launch|publish)\b/i
+const REQUEST_KIND = /\b(posts?|reels?|videos?|stories|carousels?|blogs?|articles?|ads?|emails?|newsletters?|offers?|campaigns?|seo|website|linkedin|instagram|facebook|whatsapp|youtube)\b/i
+const looksLikeRequest = (text: string) => REQUEST_VERB.test(text) && REQUEST_KIND.test(text)
 
 /** The last user message that started a request (the one an intake reply followed). */
 function lastRequest(msgs: RouterMsg[]): string {
@@ -120,7 +135,8 @@ function lastRequest(msgs: RouterMsg[]): string {
 
 /** One Router turn. `history` is the thread so far (with reply marks); `text` is the new user message. Returns
  *  undefined for workflow questions the Router does not handle (the caller answers those from live state). */
-export function routerReply(history: RouterMsg[], text: string, ctx: RouterCtx): RouterAnswer | undefined {
+export function routerReply(history: RouterMsg[], rawText: string, ctx: RouterCtx): RouterAnswer | undefined {
+  const text = normalizeCommand(rawText)
   const lastMark = [...history].reverse().find(m => m.role === 'assistant')?.mark
   const awaiting = lastMark === 'intake' || lastMark === 'plan' || lastMark === 'edit'
   // Awaiting the client's decision on a plan read-back (0.2.2 -> 0.2.3).
@@ -131,10 +147,11 @@ export function routerReply(history: RouterMsg[], text: string, ctx: RouterCtx):
     if (APPROVE.test(text.trim())) return { text: `Approved - decision recorded against the plan (0.2.3).\nBrief v1 is now with: ${names} (0.3.1).\nI will keep the current status here and bring the review package back to you before anything is published (0.3.2-0.3.3).`, mark: 'approved' }
     if (CANCEL.test(text.trim())) return { text: 'Cancelled and recorded (0.2.3) - nothing was handed to the skills.\nTell me what you would like to do instead, and I will start a fresh request.', mark: 'cancelled' }
     if (EDIT.test(text.trim())) return { text: 'What should I change - the tasks, the skill sequence, or the scope in the read-back? Tell me and I will read the plan back again.', mark: 'edit' }
+    if (looksLikeRequest(text)) return intakeReply(text, ctx) // a fresh request mid-plan starts over
     return planReply(req, text, ctx) // a refinement or more answers: read the plan back again with it noted
   }
-  // Answering the clarifying questions (0.1.3 -> 0.2).
-  if (lastMark === 'intake') return planReply(lastRequest(history) || text, text, ctx)
+  // Answering the clarifying questions (0.1.3 -> 0.2); a fresh request instead starts over.
+  if (lastMark === 'intake') return looksLikeRequest(text) ? intakeReply(text, ctx) : planReply(lastRequest(history) || text, text, ctx)
   // After a decision: a status question gets the tracker line; anything else starts a fresh request.
   if (lastMark === 'approved' || lastMark === 'status') {
     if (/\b(status|progress|where are we|how.*(going|doing)|update)\b/i.test(text)) {

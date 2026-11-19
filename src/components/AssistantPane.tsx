@@ -122,12 +122,12 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
       // Suggestion chips are questions: answered, never saved as the objective.
       const canned = chipReply(text, f)
       if (canned) return { content: [{ type: 'text', text: canned }] }
-      // Router / Concierge (19 Nov 2026, per user): while no rail skill is picked the chat IS the Router (skill 0),
-      // so a request runs the skill-0 conversation (structured request, brand context, clarifying questions, plan
-      // read-back, approve/edit/cancel, handoff + status) instead of the intake objective capture or the goal
-      // draft. A rail pick always wins and restores the screen flows below. Workflow questions the Router does not
-      // handle fall through to `reply`.
-      if (last?.role === 'user' && (() => { const s = getUi().selectedSkill; return !s || s === '0' })()) {
+      // Router / Concierge (19 Nov 2026, per user): the chat IS the Router (skill 0) on every screen, whether or
+      // not a rail skill is picked - a rail pick only chooses what the Outputs pane shows. A request runs the
+      // skill-0 conversation (structured request, brand context, clarifying questions, plan read-back,
+      // approve/edit/cancel, handoff + status) instead of the intake objective capture or the goal draft.
+      // Workflow questions the Router does not handle fall through to `reply` and the screen flows below.
+      if (last?.role === 'user') {
         const history: RouterMsg[] = messages.map(m => {
           const mtext = m.content.map(p => (p.type === 'text' ? p.text : '')).join(' ')
           const mark = (m.metadata?.custom as { router?: RouterMark } | undefined)?.router ?? (m.role === 'assistant' ? markFromText(mtext) : undefined)
