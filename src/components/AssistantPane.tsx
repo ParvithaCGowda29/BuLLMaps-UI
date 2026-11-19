@@ -252,6 +252,9 @@ export function AssistantPane({ snap, screenId, locked }: { snap: Snapshot; scre
 }
 
 /** Empty: the greeting with the composer and starter chips centred. Otherwise the thread, then the composer. */
+/* Starter chips for the idle empty state (19 Nov 2026): plain-language ways into the skills. */
+const STARTERS = ['Audit my marketing', 'Fix my website SEO', 'Plan my paid ads', "Write this week's social posts"]
+
 function ThreadBody({ snap, screenId, capture, files, chipDraft }: { snap: Snapshot; screenId?: string; capture: boolean; files: number; chipDraft: Draft | null }) {
   const empty = useAuiState(s => s.thread.messages.length === 0) && screenId !== '2.3'
   // Chips (goal-flow fine-tuning v2, 29 Oct 2026): only from the draft, only once files are uploaded, at most two.
@@ -284,13 +287,18 @@ function ThreadBody({ snap, screenId, capture, files, chipDraft }: { snap: Snaps
     <ThreadPrimitive.Root className="as-thread">
       {/* Files dropped on the pane attach to the chat (questions only), like "+". */}
       <ComposerPrimitive.AttachmentDropzone className="as-dropzone">
-        {/* Nothing said yet: the pane stays empty with just the BuLL logo (18 Nov 2026, per user) - no ISATVON
-            draft, no orb or greeting. A saved goal's draft still drives the output editor on the right. */}
+        {/* Nothing said yet: the idle empty state (19 Nov 2026, per user) - the floating BuLL logo, the greeting
+            and a few starter chips, then the composer. No ISATVON draft, no auto content. A saved goal's draft
+            still drives the output editor on the right. */}
         {empty ? <div className="as-empty">
           <img src={bull} alt="BuLL" className="as-bull" />
+          <h3 className="as-hello">How can BuLLM help you today?</h3>
+          <div className="as-starters">
+            {STARTERS.map(c => <ThreadPrimitive.Suggestion key={c} className="as-sug" prompt={c} send>{c}</ThreadPrimitive.Suggestion>)}
+          </div>
           {composer}
         </div> : <>
-          {leaving && screenId !== '1.1' && <div className="as-empty as-empty-ghost" aria-hidden><img src={bull} alt="" className="as-bull" /></div>}
+          {leaving && screenId !== '1.1' && <div className="as-empty as-empty-ghost" aria-hidden><img src={bull} alt="" className="as-bull" /><h3 className="as-hello">How can BuLLM help you today?</h3></div>}
           {/* One persistent list: stage updates are messages in it (never a replaced note). Only live progress
               (a Verify run in flight, uploads in flight) sits after the messages until it finishes. */}
           <ThreadPrimitive.Viewport className={`as-viewport${leaving ? ' as-fade-in' : ''}`}>
